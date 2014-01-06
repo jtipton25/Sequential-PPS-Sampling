@@ -17,7 +17,7 @@ alpha <- c(2, 4, 6, 8)
 beta <- c(12, 10, 8, 6)
 layout(matrix(1:4, 2, 2))
 for(i in 1:4){
-  curve(dgamma(x, alpha[i], beta[i]), from = 0, to = 4)
+	curve(dgamma(x, alpha[i], beta[i]), from = 0, to = 4)
 }
 samp.density <- sample(1:4, N, replace = TRUE)
 dbh <- 5 + 10 * rgamma(N, alpha[samp.density], beta[samp.density])
@@ -82,12 +82,12 @@ curve(exp(model.pps$coeff[1]) * x^model.pps$coeff[2], add = TRUE)
 ##
 ## Estimate Bias from pps sampling
 ##
-iter <- 10000
+iter <- 100
 coefs <- matrix(nrow = iter, ncol = 2)
 for(j in 1:iter){
-  samp <-  sample(1:N, n, prob = p)
-  model.pps <- lm(log(bio[samp]) ~ log(dbh[samp]))
-  coefs[j, ] <- model.pps$coef
+	samp <-  sample(1:N, n, prob = p)
+	model.pps <- lm(log(bio[samp]) ~ log(dbh[samp]))
+	coefs[j, ] <- model.pps$coef
 }
 
 apply(coefs, 2, mean)
@@ -122,12 +122,13 @@ c(log(a), b)
 hist(dbh, freq = FALSE, breaks = 20)
 #curve(dgamma(x, alpha, beta))
 
-iter <- 100000
+iter <- 10000
 est.mn.dbh <- vector(length = iter)
 est.var.dbh <- vector(length = iter)
 est.mn.bio <- vector(length = iter)
 est.var.bio <- vector(length = iter)
 bio.fit <- vector(mode = 'list', length = iter)
+bio.fit.weight <- vector(mode = 'list', length = iter)
 bio.fit.srs <- vector(mode = 'list', length = iter)
 pi.save <- rep(0, length = N)
 n.save <- vector(length = iter)
@@ -135,8 +136,8 @@ s2.core <- 1/8 # Sampling error from coring tree
 coefs <- matrix(nrow = iter, ncol = 2)
 
 for(i in 1:iter){
-	if(iter %% 100 == 0){
-	  cat(iter, ' ')
+	if(i %% 100 == 0){
+		cat(i, ' ')
 	}
 	p <- vector(length = N)
 	samp.srs <- sample(1:N, n) #SRS sampling for comparison
@@ -148,7 +149,7 @@ for(i in 1:iter){
 		fn <- ecdf(x)
 		p[k] <- fn(x)[k]
 	}
-	p <- p * 2 * n / N #potential sample size adjustment
+#	p <- p * 2 * n / N #potential sample size adjustment
 	samples <- rbinom(N, 1, p)
 	dbh.pps <- dbh.samp[which(samples == 1)]
 	error <- rnorm(N, 0, s2.core)
@@ -167,11 +168,15 @@ for(i in 1:iter){
 	bio.fit[[i]] <- exp(model.pps$coef[1]) * dbh^model.pps$coef[2]  
 	model.srs <- lm(log((bio*exp(error))[samp.srs]) ~ log(dbh[samp.srs]))
 	bio.fit.srs[[i]] <- exp(model.srs$coef[1]) * dbh^model.srs$coef[2]  
+	model.pps.weight <- lm(log(bio.pps) ~ log(dbh.pps), weights = 1 / fn(dbh.pps))
+	bio.fit.weight[[i]] <- exp(model.pps.weight$coef[1]) * dbh^model.pps.weight$coef[2]  
 }
+
+#load("pps.test.RData")
 
 apply(coefs, 2, mean) ## Looks pretty unbiased to me
 c(log(a), b) 
-	
+
 
 mean(est.mn.dbh)
 var(est.mn.dbh)
@@ -191,17 +196,23 @@ hist(est.mn.bio, freq = FALSE, breaks = 20)
 curve(dnorm(x, mean(est.mn.bio), sqrt(N*var(est.var.bio))), add = TRUE)
 hist(n.save) # mean is about 1/2 number of trees N for this distribution
 cdffn <- ecdf(dbh)
-hist(pi.save - 2 * n / N * cdffn(dbh), breaks = 20) # Not the same as pps sampling
+#hist(pi.save - 2 * n / N * cdffn(dbh) - 1/N, breaks = 20) # Not the same as pps sampling # controlling sample size
+#mean(pi.save - 2 * n / N * cdffn(dbh)- 1/N) # controlling sample size
 
+hist(pi.save - cdffn(dbh)); abline(v = 0, lwd = 8)
+mean(pi.save - cdffn(dbh))
 MSPE.srs <- vector(length = iter)
 MSPE.pps <- vector(length = iter)
+MSPE.pps.weight <- vector(length = iter)
 for(i in 1:iter){
-  MSPE.srs[i] <- mean((bio.fit.srs[[i]] - bio)^2)
+	MSPE.srs[i] <- mean((bio.fit.srs[[i]] - bio)^2)
 	MSPE.pps[i] <- mean((bio.fit[[i]] - bio)^2)
+	MSPE.pps.weight[i] <- mean((bio.fit.weight[[i]] - bio)^2)
 }
 
 mean(MSPE.srs)
 mean(MSPE.pps)
+mean(MSPE.pps.weight)
 
 
 ##
@@ -209,8 +220,18 @@ mean(MSPE.pps)
 ##
 
 
+##
+## Informative sampling test idea
+##
+model.no.informative <- lm(log(bio.pps) ~ log(dbh.pps))
+model.informative <- lm(log(bio.pps) ~ log(dbh.pps) + 1 / fn(dbh.pps) + log(dbh.pps) * 1 / fn(dbh.pps))
+anova(model.no.informative, model.informative)
 
 
 
 
-save.image(file = "pps.test.RData")
+#save.image(file = "pps.test.RData")
+
+hist(pi.save - 2 * n / N * cdffn(dbh), freq = FALSE)
+lines(density(pi.save - 2 * n / N * cdffn(dbh)))
+
