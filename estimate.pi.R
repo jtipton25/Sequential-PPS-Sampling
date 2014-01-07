@@ -1,7 +1,7 @@
 library(permute)
 library(MASS)
 ctrl <- how(maxperm = 10000000)
-N <- 7
+N <- 8
 perm.mat <- rbind(1:N, allPerms(N, control = ctrl))
 
 pi <- matrix(nrow = dim(perm.mat)[1], ncol = dim(perm.mat)[2])
@@ -55,3 +55,16 @@ as.fractions(apply(pi, 2, mean))
 2323*2*517 - 840*5*517
 5263*517 - 840*6*517
 115
+
+## N=8 denominator of 2*2*2*2*2*2*5*7*7 * 5*17*19 * 3*3*3*3*41 * 11*457 
+1615
+## 1615 = 5*17*19
+15680/5027
+3321
+## 3321 = 3*3*3*3*41
+5027/11
+## 5027 = 11*457 
+15680/(2^6)/5
+##15680 = 2*2*2*2*2*2*5*7*7
+as.fractions(apply(pi, 2, mean))
+
