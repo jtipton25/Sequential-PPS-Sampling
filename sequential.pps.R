@@ -2,6 +2,8 @@
 ## Sequential PPS sampling design simulation
 ##
 
+setwd('~/Google Drive/PalEON/PalEON Meeting Data/Forest ECDF Sampling/')
+
 ##
 ## Simulate dbh
 ##
@@ -22,7 +24,9 @@ for(i in 1:4){
 samp.density <- sample(1:4, N, replace = TRUE)
 dbh <- 5 + 10 * rgamma(N, alpha[samp.density], beta[samp.density])
 par(mfrow = c(1, 1))
+#pdf(file = 'dbh1.pdf')
 hist(dbh, breaks = 20)
+#dev.off()
 truth.dbh <- 1 / N * sum(dbh)
 truth.dbh
 
@@ -45,6 +49,21 @@ plot(bio ~ dbh)
 curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
 
 truth.bio <- mean(bio)
+
+## Plot of data
+#pdf(file = 'dbhLogModel.pdf')
+plot(log(bio) ~ log(dbh))
+model <- lm(log(bio) ~ log(dbh))
+abline(model)
+#dev.off()
+#pdf(file = 'dbhModelResid.pdf')
+plot(resid(model) ~ fitted(model))
+abline(h=0)
+#dev.off()
+#pdf(file = 'dbhModel.pdf')
+plot(bio ~ dbh)
+curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
+#dev.off()
 
 ##
 ## True PPS sampling design
