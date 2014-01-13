@@ -28,7 +28,7 @@ make.prob.perm <- function(N){
 ## \hat{\pi}_i - \pi_i  = (\frac{(N - 2)!} {N!} * \sum_{k = 1}^{N - 1} k \frac{k} {k + 1} + \frac{1} {2} - \frac{N - 1} {N}) * (N - i)
 ##
 
-make.prob <- function(N){
+make.pi <- function(N){
 	if(floor(N) < N){
 		"N must be an integer"
 	} else if(N < 2){
