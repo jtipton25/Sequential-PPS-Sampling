@@ -2,124 +2,173 @@
 ## Sequential PPS sampling design simulation
 ##
 
-setwd('~/Google Drive/PalEON/PalEON Meeting Data/Forest ECDF Sampling/')
+##
+## libraries and functions
+##
+
+make.gamma.mixture <- function(N, alpha, beta){
+	# makes a mixture of gamma distributions given alpha and beta vectors
+	n <- length(alpha)
+	samp <- sample(1:n, N, replace = TRUE)    
+	dbh <- rgamma(N, alpha[samp], beta[samp])
+}
+
+make.sim.biomass <- function(dbh, b0, b1, s2){
+	# make a power law distribution function with exponential random normal error and restricts values less than 0
+	N <- length(dbh)
+	bio <- b0 * dbh ^ b1 * exp(rnorm(N, 0, s2))
+	bio[bio < 0] <- min(bio)
+	if(length(bio[bio < 0]) == 0){
+		return(bio)
+	} else{
+		return(bio)
+		"some values of biomass were less than 0 so were set to min(bio)"
+	}
+}
+
+make.model.plot <- function(dbh, bio, file = 'pathname'){ # plot model fits and save to file using file = 'pathname'
+	if(file != 'pathname'){
+		pdf(file = "fullModel")
+	}
+	N <- length(dbh)
+	layout(matrix(1:4, nrow = 2))
+	hist(dbh, breaks = floor(N / 10))
+	hist(bio, breaks = floor(N / 10))
+	# model
+	model <- lm(log(bio) ~ log(dbh))
+	newdbh <- seq(min(dbh), max(dbh), length.out = N)
+	preds <- predict(model, newdata = data.frame(dbh = newdbh), interval = "predict")
+	
+	plot(bio ~ dbh)
+	curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
+	polygon(c(rev(newdbh), newdbh), c(rev(exp(preds[, 3])), exp(preds[, 2])), col = adjustcolor('grey80', alpha.f=0.5), border = NA)
+	lines(newdbh, exp(preds[ ,3]), lty = 'dashed', col = 'red')
+	lines(newdbh, exp(preds[ ,2]), lty = 'dashed', col = 'red')
+	
+	plot(log(bio) ~ log(dbh), main = 'log scale')
+	abline(model)
+	polygon(c(rev(log(newdbh)), log(newdbh)), c(rev(preds[, 3]), preds[, 2]), col = adjustcolor('grey80', alpha.f=0.5), border = NA)
+	lines(log(newdbh), preds[ ,3], lty = 'dashed', col = 'red')
+	lines(log(newdbh), preds[ ,2], lty = 'dashed', col = 'red')
+	if(file != 'pathname'){
+		dev.off()
+	}
+}
+
+make.pps.samp <- function(dbh, bio, n){ # sample dbh and bio using pps on dbh
+	N <- length(dbh)
+	p <- dbh / sum(dbh)
+	samp <- sample(1:N, n, prob = p)
+	prob <- p[samp]
+	#dbh.pps.mn <- 1 / N * sum(1 / n * dbh[samp] / p[samp])
+	dbh.pps <- dbh[samp]
+	dbh.mn <- 1 / N * sum(dbh[samp] / (n * p[samp]))
+	#delta.kl <- 1 - 
+	#dbh.pps.var <- 
+	#bio.pps.mn <- 1 / N * sum(1 / n * bio[samp] / p[samp])	
+	bio.pps <- bio[samp]
+	bio.mn <- 1 / N * sum(bio[samp] / (n * p[samp]))
+	#bio.pps.var <- 
+	list(dbh = dbh.pps, dbh.mn = dbh.mn, bio = bio.pps, bio.mn = bio.mn, p = prob)
+	#list(dbh.pps = dbh, dbh.mn = dbh.mn, dbh.var = dbh.var, bio = bio, bio.mn = bio.mn, bio.var = bio.var)
+}
+
+make.bias.pps.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
+	out <- make.pps.samp(dbh, bio, n)
+	model <- lm(log(out$bio) ~ log(out$dbh))
+	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p)
+	#list(coef = model$coef, coef.wt = model.wt$coef)
+	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2])
+}
+
+make.bias.design.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
+	out <- make.design.samp(dbh, bio, n)
+	model <- lm(log(out$bio) ~ log(out$dbh))
+	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p)
+	#list(coef = model$coef, coef.wt = model.wt$coef)
+	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2])
+}
 
 ##
 ## Simulate dbh
 ##
 
-N <- 1000
-n <- 100
-#alpha <- 2
-#beta <- 6
-#curve(dgamma(x, alpha, beta))
-#dbh <- rgamma(N, alpha, beta)
-#dbh <- runif(N)
-alpha <- c(2, 4, 6, 8) 
-beta <- c(12, 10, 8, 6)
+N <- 1000 # finite population size
+n <- 100 # expected sample size
+
+##
+## Start with a population that is a mixture of Gamma Distributions
+##
+
+alpha <- c(2, 4, 6, 8) # gamma mixture parameter
+beta <- c(12, 10, 8, 6) # gamma mixture parameter
+
+dbh <- make.gamma.mixture(N, alpha, beta)
+
+##
+## Plot DBH
+##
+
 layout(matrix(1:4, 2, 2))
-for(i in 1:4){
+for(i in 1:4){ # plot the four distibutions to mix
 	curve(dgamma(x, alpha[i], beta[i]), from = 0, to = 4)
 }
-samp.density <- sample(1:4, N, replace = TRUE)
-dbh <- 5 + 10 * rgamma(N, alpha[samp.density], beta[samp.density])
+
 par(mfrow = c(1, 1))
 #pdf(file = 'dbh1.pdf')
 hist(dbh, breaks = 20)
 #dev.off()
-truth.dbh <- 1 / N * sum(dbh)
-truth.dbh
+
+## 
+## True mean and variance for DBH
+##
+
+dbh.mn <- mean(dbh)
+dbh.var <- var(dbh)
 
 ##
 ## Simulate Biomass
 ##
 
-a <- 2
-b <- 2
-s2 <- 1 / 4
-epsilon <- rnorm(N, 0, s2)
-bio <- a * dbh ^ b * exp(epsilon)
-bio[bio < 0]
-plot(log(bio) ~ log(dbh))
-model <- lm(log(bio) ~ log(dbh))
-abline(model)
-plot(resid(model) ~ fitted(model))
-abline(h=0)
-plot(bio ~ dbh)
-curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
+b0 <- 5
+b1 <- 2
+s2 <- 1/4
 
-truth.bio <- mean(bio)
+bio <- make.sim.biomass(dbh, b0, b1, s2)
+bio.mn <- mean(bio)
+bio.var <- var(bio)
 
-## Plot of data
-#pdf(file = 'dbhLogModel.pdf')
-plot(log(bio) ~ log(dbh))
-model <- lm(log(bio) ~ log(dbh))
-abline(model)
-newdbh <- seq(min(dbh), max(dbh), length.out = 1000)
-preds <- predict(model, newdata = data.frame(dbh = newdbh), interval = "confidence")
-polygon(c(rev(log(newdbh)), log(newdbh)), c(rev(preds[, 3]), preds[, 2]), col = 'grey80', border = NA)
-lines(log(newdbh), preds[ ,3], lty = 'dashed', col = 'red')
-lines(log(newdbh), preds[ ,2], lty = 'dashed', col = 'red')
-#dev.off()
-#pdf(file = 'dbhModelResid.pdf')
-plot(resid(model) ~ fitted(model))
-abline(h=0)
-#dev.off()
-#pdf(file = 'dbhModel.pdf')
-plot(bio ~ dbh)
-curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
-polygon(c(rev(newdbh), newdbh), c(rev(exp(preds[, 3])), exp(preds[, 2])), col = 'grey80', border = NA)
-lines(newdbh, exp(preds[ ,3]), lty = 'dashed', col = 'red')
-lines(newdbh, exp(preds[ ,2]), lty = 'dashed', col = 'red')
-#dev.off()
+##
+## Plot Data
+##
+
+#make.model.plot(dbh, bio, file = "fullModel.pdf")
+make.model.plot(dbh, bio)
 
 ##
 ## True PPS sampling design
 ##
 
-p <- dbh / sum(dbh)
-hist(p)
-
-samp <- sample(1:N, n, prob = p)
-estimate.dbh <- 1 / N * sum(1 / n * dbh[samp] / p[samp])
-estimate.bio <- 1 / N * sum(1 / n * bio[samp] / p[samp])
-
-truth.dbh - estimate.dbh
-truth.bio - estimate.bio
+out.pps <- make.pps.samp(dbh, bio, n)
+dbh.mn - out.pps$dbh.mn
+bio.mn - out.pps$bio.mn
 
 ##
-## Compare True allometric relationship to pps allometric relationship
+## Plot relationship for PPS sample
 ##
 
-model.pps <- lm(log(bio[samp]) ~ log(dbh[samp]))
-model
-model.pps
-
-layout(matrix(1:4, 2))
-plot(log(bio) ~ log(dbh))
-abline(model)
-plot(bio ~ dbh)
-curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
-plot(log(bio[samp]) ~ log(dbh[samp]))
-abline(model.pps)
-plot(bio[samp] ~ dbh[samp])
-curve(exp(model.pps$coeff[1]) * x^model.pps$coeff[2], add = TRUE)
-
+make.model.plot(out.pps$dbh, out.pps$bio)
 
 ##
 ## Estimate Bias from pps sampling
 ##
-iter <- 100
-coefs <- matrix(nrow = iter, ncol = 2)
-for(j in 1:iter){
-	samp <-  sample(1:N, n, prob = p)
-	model.pps <- lm(log(bio[samp]) ~ log(dbh[samp]))
-	coefs[j, ] <- model.pps$coef
-}
 
-apply(coefs, 2, mean)
-c(log(a), b) 
-## Seems to be unbiasedly estimating the regression parameters
+bias.pps <- sapply(1:100, make.bias.pps.est, dbh = dbh, bio = bio, n = 100)
+rownames(bias.pps) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS')
+idx.mn <- c(1:2, 5:6)
+idx.var <- c(3:4, 7:8)
+apply(bias.pps[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
+apply(bias.pps[idx.mn, ], 1, var) * dim(bias.pps)[2] - apply(bias.pps[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters
 
 ##
 ## Sequential PPS design
@@ -142,12 +191,40 @@ c(log(a), b)
 ## Testing the behavior of the probability of being sampled pi_i for one population
 ##
 
-#dbh <- runif(N)
-#alpha <- 2
-#beta <- 6
+make.design.samp <- function(dbh, bio, n){
+	N <- length(dbh)
+	p <- vector(length = N)
+	for(k in 1:N){
+		x <- dbh[1:k]
+		fn <- ecdf(x)
+		p[k] <- fn(x)[k]
+	}
+	#	p <- p * 2 * n / N # potential sample size adjustment
+	samples <- rbinom(N, 1, p)
+	dbh.design <- dbh[samples == 1]
+	bio.design <- bio[samples == 1]
+	list(dbh = dbh.design, bio = bio.design)
+}
 
-hist(dbh, freq = FALSE, breaks = 20)
-#curve(dgamma(x, alpha, beta))
+out.design <- make.design.samp(dbh, bio, n)
+
+make.model.plot(out.design$dbh, out.design$bio)
+make.model.plot(dbh, bio)
+
+bias.design <- sapply(1:100, make.bias.design.est, dbh = dbh, bio = bio, n = 100)
+rownames(bias.design) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS')
+idx.mn <- c(1:2, 5:6)
+idx.var <- c(3:4, 7:8)
+apply(bias.design[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
+apply(bias.design[idx.mn, ], 1, var) * dim(bias.design)[2] - apply(bias.design[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters
+
+
+
+##
+## Older code...
+##
+
+
 
 iter <- 10000
 est.mn.dbh <- vector(length = iter)
