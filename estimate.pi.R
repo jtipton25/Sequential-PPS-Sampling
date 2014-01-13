@@ -6,7 +6,6 @@ library(MASS)
 ##
 
 ctrl <- how(maxperm = 10000000)
-N <- 4
 make.prob.perm <- function(N){
   perm.mat <- rbind(1:N, allPerms(N, control = ctrl))
   pi <- matrix(nrow = dim(perm.mat)[1], ncol = dim(perm.mat)[2])
@@ -51,12 +50,13 @@ make.prob <- function(N){
 
 
 ## Works for N=1:8 relatively quick, slows down dramatically for N > 8
-N <- 7
+N <- 4
 ## Works fast
 make.prob(N) + 1:N / N
  ## Works slow
 make.prob.perm(N)
-
+##
+make.prob(N) + 1:N / N - make.prob.perm(N)
 
 
 
