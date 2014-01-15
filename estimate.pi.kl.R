@@ -148,6 +148,7 @@ make.pi.kl <- function(N){
 	return(pi.kl)
 }
 
+
 ##
 ## N = 3
 ##
@@ -257,10 +258,21 @@ pi.kl[4, 5] # pi.kl for design
 pi.kl[4, 5] - (4*5) /(N^2) # bias of pi.kl for design relative to known ecdf
 as.fractions(pi.kl[4, 5] - (4*5) /(N^2))
 
+##
+## N = 6
+##
+
+N <- 9
+pi.kl <- make.pi.kl(N)
+pi.kl - 1:N %*% t(1:N) / N^2
 
 ##
 ## Try to come up with an analytic solution
 ##
+
+make.HN <- function(N){ # calculate the harmonic number H_n
+	-digamma(1) + digamma(N+1)
+}
 
 make.pi.kl <- function(N){
 	if(floor(N) < N){
@@ -271,13 +283,20 @@ make.pi.kl <- function(N){
 		bias <- c(1 / 4, 0)
 	} else {
 		bias <- matrix(nrow = N, ncol = N)
+		HN <- make.HN(N)
 		for(k in 1:N){
 			for(l in 1:N){
         #bias[j] <- (factorial(N - 2) / factorial(N) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2) #* (N - j)
 			  #bias[j] <- (factorial(N - 2) / factorial(N) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - j)
-			  bias[k, l] <- - (1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - k) * (N - l) +
-			  	(1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - k)  + 
-			  	(1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - l)
+			  #bias[k, l] <- - (1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - k) * (N - l) +
+			  #	(1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - k)  + 
+			  #	(1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - l)
+				
+				#bias[k, l] <- - (1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - k) * (N - l) +
+				#	(HN - 1) / (N * (N - 1)) * (N - k) + 
+	      #  (HN - 1) / (N * (N - 1)) * (N - l)
+				
+				bias[k, l] <- (HN - 1) / (N - 1) - (k / N) * (HN - N) / (N - 1) - (l / N) * (HN - N) / (N - 1) - (k / N) * (l / N) 
 			}
 		}
 		return(bias)
@@ -287,6 +306,6 @@ make.pi.kl <- function(N){
 N <- 3
 pi.kl.bias <- make.pi.kl(N) ## this has the right behavior along the last column and row...
 pi.kl.bias
-as.fractions(pi.kl.bias)
+#as.fractions(pi.kl.bias)
 make.pi(N) ## check last row and column of above
-as.fractions(make.pi(N))
+#as.fractions(make.pi(N))
