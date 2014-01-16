@@ -62,26 +62,27 @@ make.pps.samp <- function(dbh, bio, n){ # sample dbh and bio using pps on dbh
 	prob <- p[samp]
 	#dbh.pps.mn <- 1 / N * sum(1 / n * dbh[samp] / p[samp])
 	dbh.pps <- dbh[samp]
-	dbh.mn <- 1 / N * sum(dbh[samp] / (n * p[samp]))
+	dbh.mn <- 1 / N * sum(dbh.pps / (n * prob))
+	dbh.mn
 	#delta.kl <- 1 - 
 	#dbh.pps.var <- 
 	#bio.pps.mn <- 1 / N * sum(1 / n * bio[samp] / p[samp])	
 	bio.pps <- bio[samp]
-	bio.mn <- 1 / N * sum(bio[samp] / (n * p[samp]))
+	bio.mn <- 1 / N * sum(bio.pps / (n * prob))
 	#bio.pps.var <- 
-	list(dbh = dbh.pps, dbh.mn = dbh.mn, bio = bio.pps, bio.mn = bio.mn, p = prob)
+	list(dbh = dbh.pps, dbh.mn = dbh.mn, bio = bio.pps, bio.mn = bio.mn, p = p, samp = samp)
 	#list(dbh.pps = dbh, dbh.mn = dbh.mn, dbh.var = dbh.var, bio = bio, bio.mn = bio.mn, bio.var = bio.var)
 }
 
+## add in a MSPE criteria
 make.bias.pps.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
 	out <- make.pps.samp(dbh, bio, n)
 	model <- lm(log(out$bio) ~ log(out$dbh))
-	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p)
+	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p[out$samp])
 	#list(coef = model$coef, coef.wt = model.wt$coef)
 	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2])
 }
 
-<<<<<<< HEAD
 make.pi <- function(N){
 	if(floor(N) < N){
 		"N must be an integer"
@@ -101,6 +102,33 @@ make.pi <- function(N){
 	}
 }
 
+make.ecdf.samp <- function(dbh, bio, n){ # sample dbh and bio using pps on dbh
+	N <- length(dbh)
+	p <- 2 * n / N * ecdf(dbh)(dbh)
+	samples <- rbinom(1:N, 1, p)
+	samp <- which(samples == 1)
+	prob <- p[samp]
+	dbh.ecdf <- dbh[samp]
+	dbh.mn <- 1 / N * sum(dbh.ecdf / prob)
+	#delta.kl <- 1 - 
+	#dbh.pps.var <- 
+	#bio.pps.mn <- 1 / N * sum(1 / n * bio[samp] / p[samp])	
+	bio.ecdf <- bio[samp]
+	bio.mn <- 1 / N * sum(bio.ecdf / prob)
+	#bio.pps.var <- 
+	list(dbh = dbh.ecdf, dbh.mn = dbh.mn, bio = bio.ecdf, bio.mn = bio.mn, p = p, samp = samp)
+	#list(dbh.pps = dbh, dbh.mn = dbh.mn, dbh.var = dbh.var, bio = bio, bio.mn = bio.mn, bio.var = bio.var)
+}
+
+## add in a MSPE criteria
+make.bias.ecdf.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
+	out <- make.pps.samp(dbh, bio, n)
+	model <- lm(log(out$bio) ~ log(out$dbh))
+	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p[out$samp])
+	#list(coef = model$coef, coef.wt = model.wt$coef)
+	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2])
+}
+
 make.design.samp <- function(dbh, bio, n){ # sample according to the proposed design
 	N <- length(dbh)
 	p <- vector(length = N)
@@ -109,27 +137,25 @@ make.design.samp <- function(dbh, bio, n){ # sample according to the proposed de
 		fn <- ecdf(x)
 		p[k] <- fn(x)[k]
 	}
-	#	p <- p * 2 * n / N # potential sample size adjustment
-	samples <- rbinom(N, 1, p)
-	dbh.design <- dbh[samples == 1]
-	bio.design <- bio[samples == 1]
-	pi <- (make.pi(N) + 1:N/N)[samples == 1]
-	list(dbh = dbh.design, bio = bio.design, p = pi)
+	p <- p * 2 * n / N # potential sample size adjustment
+	samp <- which(rbinom(N, 1, p) == 1)
+	pi <- (make.pi(N) + 1:N/N)#[samples == 1]
+	pi.samp <- pi[samp]
+	dbh.design <- dbh[samp]
+	dbh.mn <- 1 / N * sum(dbh.design / pi.samp)
+	bio.design <- bio[samp]
+	bio.mn <- 1 / N * sum(bio.design / pi.samp)
+		list(dbh = dbh.design, dbh.mn = dbh.mn, bio = bio.design, bio.mn = bio.mn, p = pi, samp = samp)
 }
-
-=======
->>>>>>> 51cb9ddd2295e2ae7ac531746059009d47baf040
+## add in a MSPE criteria
 make.bias.design.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
 	out <- make.design.samp(dbh, bio, n)
 	model <- lm(log(out$bio) ~ log(out$dbh))
-	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p)
+	model.wt <- lm(log(out$bio) ~ log(out$dbh), weights = out$p[out$samp])
 	#list(coef = model$coef, coef.wt = model.wt$coef)
 	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2])
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 51cb9ddd2295e2ae7ac531746059009d47baf040
 
 ##
 ## Simulate dbh
@@ -175,7 +201,6 @@ dbh.var <- var(dbh)
 b0 <- 5
 b1 <- 2
 s2 <- 1/4
-<<<<<<< HEAD
 
 bio <- make.sim.biomass(dbh, b0, b1, s2)
 bio.mn <- mean(bio)
@@ -185,17 +210,6 @@ bio.var <- var(bio)
 ## Plot Data
 ##
 
-=======
-
-bio <- make.sim.biomass(dbh, b0, b1, s2)
-bio.mn <- mean(bio)
-bio.var <- var(bio)
-
-##
-## Plot Data
-##
-
->>>>>>> 51cb9ddd2295e2ae7ac531746059009d47baf040
 #make.model.plot(dbh, bio, file = "fullModel.pdf")
 make.model.plot(dbh, bio)
 
@@ -217,12 +231,39 @@ make.model.plot(out.pps$dbh, out.pps$bio)
 ## Estimate Bias from pps sampling
 ##
 
-bias.pps <- sapply(1:100, make.bias.pps.est, dbh = dbh, bio = bio, n = 100)
+bias.pps <- sapply(1:1000, make.bias.pps.est, dbh = dbh, bio = bio, n = 100)
 rownames(bias.pps) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS')
 idx.mn <- c(1:2, 5:6)
 idx.var <- c(3:4, 7:8)
 apply(bias.pps[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
-apply(bias.pps[idx.mn, ], 1, var) * dim(bias.pps)[2] - apply(bias.pps[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters
+## variance of the means - mean of the variances
+apply(bias.pps[idx.mn, ], 1, var) - apply(bias.pps[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
+
+##
+## ecdf sampling design
+##
+
+out.ecdf <- make.ecdf.samp(dbh, bio, n)
+dbh.mn - out.ecdf$dbh.mn
+bio.mn - out.ecdf$bio.mn
+
+##
+## Plot relationship for ecdf sample
+##
+
+make.model.plot(out.ecdf$dbh, out.ecdf$bio)
+
+##
+## Estimate Bias from ecdf sampling
+##
+
+bias.ecdf <- sapply(1:1000, make.bias.ecdf.est, dbh = dbh, bio = bio, n = 100)
+rownames(bias.ecdf) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS')
+idx.mn <- c(1:2, 5:6)
+idx.var <- c(3:4, 7:8)
+apply(bias.ecdf[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
+## variance of the means - mean of the variances
+apply(bias.ecdf[idx.mn, ], 1, var) - apply(bias.ecdf[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
 
 ##
 ## Sequential PPS design
@@ -245,19 +286,23 @@ apply(bias.pps[idx.mn, ], 1, var) * dim(bias.pps)[2] - apply(bias.pps[idx.var, ]
 ## Testing the behavior of the probability of being sampled pi_i for one population
 ##
 
-<<<<<<< HEAD
-
 out.design <- make.design.samp(dbh, bio, n)
 
 make.model.plot(out.design$dbh, out.design$bio)
 make.model.plot(dbh, bio)
 
-bias.design <- sapply(1:1000, make.bias.design.est, dbh = dbh, bio = bio, n = 100)
+bias.design <- sapply(1:100, make.bias.design.est, dbh = dbh, bio = bio, n = 100)
 rownames(bias.design) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS')
 idx.mn <- c(1:2, 5:6)
 idx.var <- c(3:4, 7:8)
 apply(bias.design[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
-apply(bias.design[idx.mn, ], 1, var) * (dim(bias.design)[2] - 1) - apply(bias.design[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters
+## variance of the means - mean of the variances
+apply(bias.design[idx.mn, ], 1, var) - apply(bias.design[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters - seems to be unbiased
+
+
+
+
+
 
 
 
@@ -266,7 +311,6 @@ apply(bias.design[idx.mn, ], 1, var) * (dim(bias.design)[2] - 1) - apply(bias.de
 ##
 
 
-=======
 make.design.samp <- function(dbh, bio, n){
 	N <- length(dbh)
 	p <- vector(length = N)
@@ -301,7 +345,6 @@ apply(bias.design[idx.mn, ], 1, var) * dim(bias.design)[2] - apply(bias.design[i
 ##
 
 
->>>>>>> 51cb9ddd2295e2ae7ac531746059009d47baf040
 
 iter <- 10000
 est.mn.dbh <- vector(length = iter)
