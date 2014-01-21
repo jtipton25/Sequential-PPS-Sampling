@@ -10,7 +10,7 @@ make.gamma.mixture <- function(N, alpha, beta){
 	# makes a mixture of gamma distributions given alpha and beta vectors
 	n <- length(alpha)
 	samp <- sample(1:n, N, replace = TRUE)    
-	dbh <- rgamma(N, alpha[samp], beta[samp])
+	dbh <- sort(rgamma(N, alpha[samp], beta[samp]))
 }
 
 make.sim.biomass <- function(dbh, b0, b1, s2){
@@ -74,7 +74,7 @@ make.pi <- function(N){
 
 make.samp <- function(dbh, bio, n, method = 'srs'){
   N <- length(dbh)
-	if(method == 'srs'){
+  if(method == 'srs'){
 		p <- n * rep(1 / N, N)
 		samp <- sample(1:N, n, prob = p)
 	}
@@ -87,17 +87,16 @@ make.samp <- function(dbh, bio, n, method = 'srs'){
 	  samp <- which(rbinom(1:N, 1, p) == 1)
 	}
 	if(method == 'design'){
-		idx <- sample(1:N)
 	  p <- vector(length = N)
+	  idx <- sample(1:N)
 		for(k in 1:N){
       x <- dbh[idx[1:k]]
       fn <- ecdf(x)
       p[k] <- fn(x)[k]
 	  }
-	p <- p * 2 * n / N # potential sample size adjustment
-	samp <- which(rbinom(N, 1, p) == 1)
-	idx <- order(dbh)
-	p <- make.pi(N)
+	  p <- p * 2 * n / N # potential sample size adjustment
+	  samp <- which((rbinom(N, 1, p) == 1))
+	  p <- make.pi(N)
 	}  
 	prob <- p[samp]
 	dbh.samp <- dbh[samp]
