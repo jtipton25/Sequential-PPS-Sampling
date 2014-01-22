@@ -163,29 +163,75 @@ make.model.plot(dbh, bio)
 ##
 ## empirical estimator results
 ##
+
 make.est.result <- function(rep, dbh, bio, n = N / 2, method = 'design'){
-  out <- make.samp(dbh, bio, n, method = 'design')
-  n.samp <- length(out$samp)
-  z <- vector(length = n.samp - 1)
-#  for(i in 2:n.samp){
-# 	  z[i - 1] <- sum(out$dbh[1:(i - 1)]) + out$dbh[i] / out$p[out$samp][i]
-#  }
-#  1 / (N * n) * (N*out$dbh[1] + sum(z))
-  for(i in 2:n.samp){
- 	  z[i - 1] <- sum(out$bio[1:(i - 1)]) + out$bio[i] / out$p[out$samp][i]
+	out <- make.samp(dbh, bio, n, method)
+	n.samp <- length(out$samp)
+  if(method == 'srs'){
+  	return(mean(out$bio))
   }
-  1 / (N * n) * (N*out$bio[1] + sum(z))
+	if(method == 'pps'){
+		return(1 / N * sum(out$bio / out$p[out$samp]))
+	}
+	if(method == 'ecdf'){
+		return(1 / N * sum(out$bio / out$p[out$samp]))
+	}
+	if(method == 'design'){
+		z <- vector(length = n.samp - 1)
+		q <- 1 / (N - 1:(n.samp - 1))
+		for(i in 2:n.samp){
+			z[i - 1] <- sum(out$bio[1:(i - 1)]) + out$bio[i] / q[i - 1]
+		}
+		return(1 / (N * n) * (N*out$bio[1] + sum(z)))
+	}
 }
 
-temp <- sapply(1:100, make.est.result, dbh = dbh, bio = bio, n = N / 2, method = 'design') 
-summary(temp)
+library(parallel)
+library(snowfall)
+library(rlecuyer)
+cps <- detectCores()
+sfInit(parallel = TRUE, cpus = cps)
+sfClusterSetupRNG() 
+sfExportAll()
+
+temp.srs <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = N / 2, method = 'srs') 
+summary(temp.srs)
+mean(temp.srs)
+var(temp.srs)
+
+temp.pps <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = N / 2, method = 'pps') 
+summary(temp.pps)
+mean(temp.pps)
+var(temp.pps)
+
+temp.ecdf <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = N / 2, method = 'ecdf') 
+summary(temp.ecdf)
+mean(temp.ecdf)
+var(temp.ecdf)
+
+temp.design <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = N / 2, method = 'design') 
+summary(temp.design)
+mean(temp.design)
+var(temp.design)
+
 
 bio.mn
+mean(temp.srs)
+mean(temp.ecdf)
+mean(temp.pps)
+mean(temp.design)
+
+var(temp.srs)
+var(temp.ecdf)
+var(temp.pps)
+var(temp.design)
+
+
 dbh.mn
 
 
-make.two.stage.samp <- function(rep, dbh, bio, n, n0, N0, method = 'design'){
-	N <- length(dbh)
+# make.two.stage.samp <- function(rep, dbh, bio, n, n0, N0, method = 'design'){
+# 	N <- length(dbh)
 #	if(method == 'srs'){
 #		p <- n * rep(1 / N, N)
 #		samp <- sample(1:N, n, prob = p)
@@ -198,34 +244,34 @@ make.two.stage.samp <- function(rep, dbh, bio, n, n0, N0, method = 'design'){
 #		p <- 2 * n / N * ecdf(dbh)(dbh)
 #		samp <- which(rbinom(1:N, 1, p) == 1)
 #	}
-	if(method == 'design'){
-		dbh <- sample(dbh)
-		idx0 <- sample(1:N0, n0)
-		idx <- sample(N0:N)
-		dbh.srs <- dbh[idx0]	
-		p <- vector(length = N - N0)
-		for(k in (N0 + 1):N){
-			x <- dbh[idx[1:(k - N0)]]
-			fn <- ecdf(x)
-			p[k - N0] <- fn(x)[k - N0]
-		}
-		#p <- p * 2 * n / N # potential sample size adjustment
-		samp <- which(rbinom(N - N0, 1, p) == 1)
-		#p <- make.pi(N)
-	}  
-	prob <- p[samp]
-	dbh.samp <- dbh[idx][samp]
-	n <- length(dbh.srs) + length(dbh.samp)
-	n.samp <- length(dbh.samp)
-	z <- vector(length = n.samp)
-	z[1] <- sum(dbh.srs) + dbh.samp[1] / prob[1]
-	for(i in 2:n.samp){
-		z[i] <- sum(dbh.srs) + sum(dbh.samp[1:(i - 1)]) + dbh.samp[i] / prob[i]
-	}
-  1 / (N * n) * (N * n0 * mean(dbh.srs) + sum(z))
-}
+# # 	if(method == 'design'){
+# 		dbh <- sample(dbh)
+# 		idx0 <- sample(1:N0, n0)
+# 		idx <- sample(N0:N)
+# 		dbh.srs <- dbh[idx0]	
+# 		p <- vector(length = N - N0)
+# 		for(k in (N0 + 1):N){
+# 			x <- dbh[idx[1:(k - N0)]]
+# 			fn <- ecdf(x)
+# 			p[k - N0] <- fn(x)[k - N0]
+# 		}
+# 		#p <- p * 2 * n / N # potential sample size adjustment
+# 		samp <- which(rbinom(N - N0, 1, p) == 1)
+# 		#p <- make.pi(N)
+# 	}  
+# 	prob <- p[samp]
+# 	dbh.samp <- dbh[idx][samp]
+# 	n <- length(dbh.srs) + length(dbh.samp)
+# 	n.samp <- length(dbh.samp)
+# 	z <- vector(length = n.samp)
+# 	z[1] <- sum(dbh.srs) + dbh.samp[1] / prob[1]
+# 	for(i in 2:n.samp){
+# 		z[i] <- sum(dbh.srs) + sum(dbh.samp[1:(i - 1)]) + dbh.samp[i] / prob[i]
+# 	}
+#   1 / (N * n) * (N * n0 * mean(dbh.srs) + sum(z))
+# }
 
-test <- sapply(1:100, make.two.stage.samp, dbh = dbh, bio = bio, n = n, n0 = 50, N0 = N-4, method = 'design')
-summary(test)
-mean(na.omit(test))
-dbh.mn
+# test <- sapply(1:100, make.two.stage.samp, dbh = dbh, bio = bio, n = n, n0 = 50, N0 = N-4, method = 'design')
+# summary(test)
+# mean(na.omit(test))
+# dbh.mn
