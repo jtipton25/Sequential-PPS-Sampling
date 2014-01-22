@@ -125,8 +125,8 @@ make.bias.est <- function(iter, dbh, bio, n, method = 'srs'){ # estimate bias in
 ## Simulate dbh
 ##
 
-N <- 1000 # finite population size
-n <- 100 # expected sample size
+N <- 300 # finite population size
+n <- 30 # expected sample size
 
 ##
 ## Start with a population that is a mixture of Gamma Distributions
@@ -195,7 +195,7 @@ make.model.plot(out.srs$dbh, out.srs$bio)
 ## Estimate Bias from SRS sampling
 ##
 
-bias.srs <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = 100, method = 'srs')
+bias.srs <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = n, method = 'srs')
 idx.mn <- c(1:2, 5:6)
 idx.var <- c(3:4, 7:8)
 idx.mspe <- 9:10
@@ -224,7 +224,7 @@ make.model.plot(out.pps$dbh, out.pps$bio)
 ## Estimate Bias from pps sampling
 ##
 
-bias.pps <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = 100, method = 'pps')
+bias.pps <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = n, method = 'pps')
 apply(bias.pps[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
 ## variance of the means - mean of the variances
 apply(bias.pps[idx.mn, ], 1, var) - apply(bias.pps[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
@@ -250,7 +250,7 @@ make.model.plot(out.ecdf$dbh, out.ecdf$bio)
 ## Estimate Bias from ecdf sampling
 ##
 
-bias.ecdf <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = 100, method = 'ecdf')
+bias.ecdf <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = n, method = 'ecdf')
 apply(bias.ecdf[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
 ## variance of the means - mean of the variances
 apply(bias.ecdf[idx.mn, ], 1, var) - apply(bias.ecdf[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
@@ -283,7 +283,7 @@ out.design <- make.samp(dbh, bio, n, method = "design")
 make.model.plot(out.design$dbh, out.design$bio)
 make.model.plot(dbh, bio)
 
-bias.design <- sapply(1:100, make.bias.est, dbh = dbh, bio = bio, n = 100, method = 'design')
+bias.design <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = n, method = 'design')
 apply(bias.design[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
 ## variance of the means - mean of the variances
 apply(bias.design[idx.mn, ], 1, var) - apply(bias.design[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
