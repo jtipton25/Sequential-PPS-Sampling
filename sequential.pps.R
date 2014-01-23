@@ -6,120 +6,8 @@
 ## libraries and functions
 ##
 
-make.gamma.mixture <- function(N, alpha, beta){
-	# makes a mixture of gamma distributions given alpha and beta vectors
-	n <- length(alpha)
-	samp <- sample(1:n, N, replace = TRUE)    
-	dbh <- sort(rgamma(N, alpha[samp], beta[samp]))
-}
 
-make.sim.biomass <- function(dbh, b0, b1, s2){
-	# make a power law distribution function with exponential random normal error and restricts values less than 0
-	N <- length(dbh)
-	bio <- b0 * dbh ^ b1 * exp(rnorm(N, 0, s2))
-	bio[bio < 0] <- min(bio)
-	if(length(bio[bio < 0]) == 0){
-		return(bio)
-	} else{
-		return(bio)
-		"some values of biomass were less than 0 so were set to min(bio)"
-	}
-}
-
-make.model.plot <- function(dbh, bio, file = 'pathname'){ # plot model fits and save to file using file = 'pathname'
-	if(file != 'pathname'){
-		pdf(file = "fullModel")
-	}
-	N <- length(dbh)
-	layout(matrix(1:4, nrow = 2))
-	hist(dbh, breaks = floor(N / 10))
-	hist(bio, breaks = floor(N / 10))
-	# model
-	model <- lm(log(bio) ~ log(dbh))
-	newdbh <- seq(min(dbh), max(dbh), length.out = N)
-	preds <- predict(model, newdata = data.frame(dbh = newdbh), interval = "predict")
-	
-	plot(bio ~ dbh)
-	curve(exp(model$coeff[1]) * x^model$coeff[2], add = TRUE)
-	polygon(c(rev(newdbh), newdbh), c(rev(exp(preds[, 3])), exp(preds[, 2])), col = adjustcolor('grey80', alpha.f=0.5), border = NA)
-	lines(newdbh, exp(preds[ ,3]), lty = 'dashed', col = 'red')
-	lines(newdbh, exp(preds[ ,2]), lty = 'dashed', col = 'red')
-
-	plot(log(bio) ~ log(dbh), main = 'log scale')
-	abline(model)
-	polygon(c(rev(log(newdbh)), log(newdbh)), c(rev(preds[, 3]), preds[, 2]), col = adjustcolor('grey80', alpha.f=0.5), border = NA)
-	lines(log(newdbh), preds[ ,3], lty = 'dashed', col = 'red')
-	lines(log(newdbh), preds[ ,2], lty = 'dashed', col = 'red')
-	if(file != 'pathname'){
-		dev.off()
-	}
-}
-
-make.pi <- function(N){
-	if(floor(N) < N){
-		"N must be an integer"
-	} else if(N < 2){
-		"N must be greater than 2"
-	} else if(N == 2){
-		bias <- c(1 / 4, 0)
-	} else {
-		bias <- vector(length = N)
-		for(j in 1:(N-1)){
-		bias[j] <- (1 / (N * (N - 1)) * (sum(1:(N-1) * 1:(N-1) / (2:N))) + 1 /2 - (N - 1) / N) * (N - j)
-		}
-		bias[N] <- 0
-		return(bias + 1:N / N)
-	}
-}
-
-make.samp <- function(dbh, bio, n, method = 'srs'){
-  N <- length(dbh)
-  if(method == 'srs'){
-		p <- n * rep(1 / N, N)
-		samp <- sample(1:N, n, prob = p)
-	}
-	if(method == 'pps'){
-		p <- n * dbh / sum(dbh)
-		samp <- sample(1:N, n, prob = p)
-	}
-	if(method == 'ecdf'){
-	  p <- 2 * n / N * ecdf(dbh)(dbh)
-	  samp <- which(rbinom(1:N, 1, p) == 1)
-	}
-	if(method == 'design'){
-	  p <- vector(length = N)
-	  idx <- sample(1:N)
-		for(k in 1:N){
-      x <- dbh[idx[1:k]]
-      fn <- ecdf(x)
-      p[k] <- fn(x)[k]
-	  }
-	  p <- p * 2 * n / N # potential sample size adjustment
-	  samp <- which((rbinom(N, 1, p) == 1))
-	  p <- make.pi(N)
-	}  
-	prob <- p[samp]
-	dbh.samp <- dbh[samp]
-	dbh.mn <- 1 / N * sum(dbh.samp / prob)
-	bio.samp <- bio[samp]
-  bio.mn <- 1 / N * sum(bio.samp / prob)	
-	list(dbh = dbh.samp, dbh.mn = dbh.mn, bio = bio.samp, bio.mn = bio.mn, p = p, samp = samp)
-}
-
-make.bias.est <- function(iter, dbh, bio, n, method = 'srs'){ # estimate bias in regression coefficients from sampling design
-	out <- make.samp(dbh, bio, n, method)
-	model <- lm(log(bio) ~ log(dbh), data = data.frame(dbh = out$dbh, bio = out$bio))
-	model.wt <- lm(log(bio) ~ log(dbh), weights = out$p[out$samp], data = data.frame(dbh = out$dbh, bio = out$bio))
-	newdata <- data.frame(dbh = dbh[ - out$samp])
-	preds <- predict(model, newdata = newdata)
-	preds.wt <- predict(model.wt, newdata = newdata)
-	pred.mse <- mean((exp(preds) - bio[ - out$samp])^2)
-	pred.wt.mse <- mean((exp(preds.wt) - bio[ - out$samp])^2)
-	#c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-  bias <- c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-	names(bias) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS', 'MSPE OLS', 'MSPE WLS')
-	return(bias)
-}
+source('sequential.functions.R')
 
 ##
 ## Simulate dbh
@@ -290,121 +178,30 @@ apply(bias.design[idx.mn, ], 1, var) - apply(bias.design[idx.var, ], 1, mean) # 
 # mean MSPE
 apply(bias.design[idx.mspe, ], 1, mean) # seems to be similar to pps (at least for this particular finite population)
 
+
+
+##
+## Estimate Bias from stratified sampling
+##
+
+bias.strat <- sapply(1:1000, make.bias.est, dbh = dbh, bio = bio, n = n, method = 'strat')
+apply(bias.strat[idx.mn,], 1, mean) - rep(c(log(b0), b1), 2) # seems to be unbiasedly estimating the regression parameters
+## variance of the means - mean of the variances
+apply(bias.strat[idx.mn, ], 1, var) - apply(bias.design[idx.var, ], 1, mean) # variance of estimator vs estimated variance for regression parameters seems to be unbiased
+# mean MSPE
+apply(bias.strat[idx.mspe, ], 1, mean) # seems to be similar to pps (at least for this particular finite population)
+
+##
+## Compare bias estimates
+##
+
 apply(bias.srs[idx.mspe, ], 1, mean)
 apply(bias.pps[idx.mspe, ], 1, mean)
 apply(bias.ecdf[idx.mspe, ], 1, mean)
 apply(bias.design[idx.mspe, ], 1, mean)
+apply(bias.strat[idx.mspe, ], 1, mean)
 
 
 
-##
-## Older code
-##
-
-#make.pps.samp <- function(dbh, bio, n){ # sample dbh and bio using pps on dbh
-#	N <- length(dbh)
-#	p <- dbh / sum(dbh)
-#	samp <- sample(1:N, n, prob = p)
-#	prob <- p[samp]
-	#dbh.pps.mn <- 1 / N * sum(1 / n * dbh[samp] / p[samp])
-#	dbh.pps <- dbh[samp]
-#	dbh.mn <- 1 / N * sum(dbh.pps / (n * prob))
-#	dbh.mn
-	#delta.kl <- 1 - 
-	#dbh.pps.var <- 
-	#bio.pps.mn <- 1 / N * sum(1 / n * bio[samp] / p[samp])	
-#	bio.pps <- bio[samp]
-#	bio.mn <- 1 / N * sum(bio.pps / (n * prob))
-	#bio.pps.var <- 
-#	list(dbh = dbh.pps, dbh.mn = dbh.mn, bio = bio.pps, bio.mn = bio.mn, p = p, samp = samp)
-	#list(dbh.pps = dbh, dbh.mn = dbh.mn, dbh.var = dbh.var, bio = bio, bio.mn = bio.mn, bio.var = bio.var)
-#}
-
-# add MSPE for total biomass
-#make.bias.pps.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
-#	out <- make.pps.samp(dbh, bio, n)
-#	model <- lm(log(bio) ~ log(dbh), data = out)
-#	model.wt <- lm(log(bio) ~ log(dbh), weights = out$p[out$samp], data = out)
-#	newdata <- data.frame(dbh = dbh[ - out$samp])
-#	preds <- predict(model, newdata = newdata)
-#	preds.wt <- predict(model.wt, newdata = newdata)
-#	pred.mse <- mean((exp(preds) - bio[ - out$samp])^2)
-#	pred.wt.mse <- mean((exp(preds.wt) - bio[ - out$samp])^2)
-#	#list(coef = model$coef, coef.wt = model.wt$coef, pred.mse = pred.mse, pred.wt.mse = pred.wt.mse)
-#	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-#}
 
 
-#make.ecdf.samp <- function(dbh, bio, n){ # sample dbh and bio using pps on dbh
-#	N <- length(dbh)
-#	p <- 2 * n / N * ecdf(dbh)(dbh)
-#	samples <- rbinom(1:N, 1, p)
-#	samp <- which(samples == 1)
-#	prob <- p[samp]
-#	dbh.ecdf <- dbh[samp]
-#	dbh.mn <- 1 / N * sum(dbh.ecdf / prob)
-	#delta.kl <- 1 - 
-	#dbh.pps.var <- 
-	#bio.pps.mn <- 1 / N * sum(1 / n * bio[samp] / p[samp])	
-#	bio.ecdf <- bio[samp]
-#	bio.mn <- 1 / N * sum(bio.ecdf / prob)
-	#bio.pps.var <- 
-#	list(dbh = dbh.ecdf, dbh.mn = dbh.mn, bio = bio.ecdf, bio.mn = bio.mn, p = p, samp = samp)
-#}
-
-# add MSPE for total biomass
-#make.bias.ecdf.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
-#	out <- make.pps.samp(dbh, bio, n)
-#	model <- lm(log(bio) ~ log(dbh), data = out)
-#	model.wt <- lm(log(bio) ~ log(dbh), weights = out$p[out$samp], data = out)
-#	newdata <- data.frame(dbh = dbh[ - out$samp])
-#	preds <- predict(model, newdata = newdata)
-#	preds.wt <- predict(model.wt, newdata = newdata)
-#	pred.mse <- mean((exp(preds) - bio[ - out$samp])^2)
-#	pred.wt.mse <- mean((exp(preds.wt) - bio[ - out$samp])^2)
-	#list(coef = model$coef, coef.wt = model.wt$coef, pred.mse = pred.mse, pred.wt.mse = pred.wt.mse)
-	#list(coef = model$coef, coef.wt = model.wt$coef)
-#	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-#}
-
-#make.design.samp <- function(dbh, bio, n){ # sample according to the proposed design
-#	N <- length(dbh)
-#	p <- vector(length = N)
-#	for(k in 1:N){
-#		x <- dbh[1:k]
-#		fn <- ecdf(x)
-#		p[k] <- fn(x)[k]
-#	}
-#	p <- p * 2 * n / N # potential sample size adjustment
-#	samp <- which(rbinom(N, 1, p) == 1)
-#	pi <- (make.pi(N) + 1:N/N)#[samples == 1]
-#	pi.samp <- pi[samp]
-#	dbh.design <- dbh[samp]
-#	dbh.mn <- 1 / N * sum(dbh.design / pi.samp)
-#	bio.design <- bio[samp]
-#	bio.mn <- 1 / N * sum(bio.design / pi.samp)
-#	list(dbh = dbh.design, dbh.mn = dbh.mn, bio = bio.design, bio.mn = bio.mn, p = pi, samp = samp)
-#}
-
-# add MSPE for total biomass
-#make.bias.design.est <- function(iter, dbh, bio, n){ # estimate bias in regression coefficients from pps sampling
-#	out <- make.design.samp(dbh, bio, n)
-#	model <- lm(log(bio) ~ log(dbh), data = data.frame(dbh = out$dbh, bio = out$bio))
-#	model.wt <- lm(log(bio) ~ log(dbh), weights = out$p[out$samp], data = data.frame(dbh = out$dbh, bio = out$bio))
-#	newdata <- data.frame(dbh = dbh[ - out$samp])
-#	preds <- predict(model, newdata = newdata)
-#	preds.wt <- predict(model.wt, newdata = newdata)
-#	pred.mse <- mean((exp(preds) - bio[ - out$samp])^2)
-#	pred.wt.mse <- mean((exp(preds.wt) - bio[ - out$samp])^2)
-#	c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-	#list(coef = model$coef, coef.wt = model.wt$coef, pred.mse = pred.mse, pred.wt.mse = pred.wt.mse)
-	#list(coef = model$coef, coef.wt = model.wt$coef)
-	#c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
-#}
-
-##
-## Informative sampling test idea
-##
-model.no.informative <- lm(log(bio.pps) ~ log(dbh.pps))
-model.informative <- lm(log(bio.pps) ~ log(dbh.pps) + 1 / fn(dbh.pps) + log(dbh.pps) * 1 / fn(dbh.pps))
-anova(model.no.informative, model.informative)

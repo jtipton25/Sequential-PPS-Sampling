@@ -95,117 +95,76 @@ make.samp <- function(dbh, bio, n, method = 'srs'){
 		idx <- order(dbh)
 		#p <- make.pi(N)
 	}
+	if(method == 'strat'){
+	  if(n %% 3 == 0){
+		  n1 <- n / 3
+  		n2 <- n / 3
+	   	n3 <- n / 3
+  	}
+	  if(n %% 3 == 1){
+		  n1 <- floor(n / 3)
+  		n2 <- floor(n / 3)
+	   	n3 <- ceiling(n / 3)
+  	}
+	  if(n %% 3 == 2){
+		  n1 <- floor(n / 3)
+		  n2 <- ceiling(n / 3)
+		  n3 <- ceiling(n / 3)
+  	}	
+	  N <- length(dbh)
+  	dbh.quant <- make.gamma.mixture(N, alpha = c(2, 4, 6, 8), beta = c(12, 10, 8, 6))
+	  quant <- quantile(dbh.quant, probs = c(1/3, 2/3))
+  	q.idx.1 <- which(dbh < quant[1])
+  	q.idx.2 <- which(quant[1] <= dbh & dbh < quant[2])
+  	q.idx.3 <- which(quant[2] <= dbh)
+  	samp1 <- sample(q.idx.1, n1)
+  	samp2 <- sample(q.idx.2, n2)
+  	samp3 <- sample(q.idx.3, n3)
+  	samp <- c(samp1, samp2, samp3)
+  	dbh.samp1 <- dbh[samp1]
+  	dbh.samp2 <- dbh[samp2]
+  	dbh.samp3 <- dbh[samp3]
+  	bio.samp1 <- bio[samp1]
+  	bio.samp2 <- bio[samp2]
+  	bio.samp3 <- bio[samp3]
+  	nh <- c(length(samp1), length(samp2), length(samp3))
+  	Nh <- c(length(q.idx.1), length(q.idx.2), length(q.idx.3))
+  	muh.dbh <- c(mean(dbh.samp1), mean(dbh.samp2), mean(dbh.samp3))
+  	sh.dbh <- c(var(dbh.samp1), var(dbh.samp2), var(dbh.samp3))
+  	muh.bio <- c(mean(bio.samp1), mean(bio.samp2), mean(bio.samp3))
+  	dbh.mn <- 1 / N * sum(Nh * muh.dbh)
+  	bio.mn <- 1 / N * sum(Nh * muh.bio)
+  	dbh.samp <- dbh[samp]
+  	bio.samp <- bio[samp]
+  	list(dbh = dbh.samp, dbh.mn = dbh.mn, bio = bio.samp, bio.mn = bio.mn, quant = quant, samp = samp)
+	} else {
 	prob <- p[samp]
 	dbh.samp <- dbh[samp]
 	dbh.mn <- 1 / N * sum(dbh.samp / prob)
 	bio.samp <- bio[samp]
 	bio.mn <- 1 / N * sum(bio.samp / prob)	
 	list(dbh = dbh.samp, dbh.mn = dbh.mn, bio = bio.samp, bio.mn = bio.mn, p = p, samp = samp)
+	}
 }
 
-make.samp.strat <- function(dbh, bio, n){
-	N <- length(dbh)
-  if(n %% 3 == 0){
-		n1 <- n / 3
-		n2 <- n / 3
-		n3 <- n / 3
+make.bias.est <- function(iter, dbh, bio, n, method = 'srs'){ # estimate bias in regression coefficients from sampling design
+	if(method == 'strat'){
+		out <- make.samp.strat(dbh, bio, n)	
+	}	else {
+		out <- make.samp(dbh, bio, n, method)
 	}
-	if(n %% 3 == 1){
-		n1 <- floor(n / 3)
-		n2 <- floor(n / 3)
-		n3 <- ceiling(n / 3)
-	}
-	if(n %% 3 == 2){
-		n1 <- floor(n / 3)
-		n2 <- ceiling(n / 3)
-		n3 <- ceiling(n / 3)
-	}
-	quant <- quantile(dbh, probs = c(1/3, 2/3))
-	q.idx.1 <- which(dbh < quant[1])
-	q.idx.2 <- which(quant[1] <= dbh & dbh < quant[2])
-	q.idx.3 <- which(quant[2] <= dbh)
-	samp1 <- sample(q.idx.1, n1)
-	samp2 <- sample(q.idx.2, n2)
-	samp3 <- sample(q.idx.3, n3)
-	samp <- c(samp1, samp2, samp3)
-  dbh.samp1 <- dbh[samp1]
-  dbh.samp2 <- dbh[samp2]
-  dbh.samp3 <- dbh[samp3]
-  bio.samp1 <- bio[samp1]
-  bio.samp2 <- bio[samp2]
-  bio.samp3 <- bio[samp3]
-  nh <- c(length(samp1), length(samp2), length(samp3))
-  Nh <- c(length(q.idx.1), length(q.idx.2), length(q.idx.3))
-  muh.dbh <- c(mean(dbh.samp1), mean(dbh.samp2), mean(dbh.samp3))
-  sh.dbh <- c(var(dbh.samp1), var(dbh.samp2), var(dbh.samp3))
-  muh.bio <- c(mean(bio.samp1), mean(bio.samp2), mean(bio.samp3))
-  dbh.mn <- 1 / N * sum(Nh * muh.dbh)
-  bio.mn <- 1 / N * sum(Nh * muh.bio)
-  dbh.samp <- dbh[samp]
-  bio.samp <- bio[samp]
-  list(dbh = dbh.samp, dbh.mn = dbh.mn, bio = bio.samp, bio.mn = bio.mn, quant = quant, samp = samp)
+	model <- lm(log(bio) ~ log(dbh), data = data.frame(dbh = out$dbh, bio = out$bio))
+	model.wt <- lm(log(bio) ~ log(dbh), weights = out$p[out$samp], data = data.frame(dbh = out$dbh, bio = out$bio))
+	newdata <- data.frame(dbh = dbh[ - out$samp])
+	preds <- predict(model, newdata = newdata)
+	preds.wt <- predict(model.wt, newdata = newdata)
+	pred.mse <- mean((exp(preds) - bio[ - out$samp])^2)
+	pred.wt.mse <- mean((exp(preds.wt) - bio[ - out$samp])^2)
+	#c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
+	bias <- c(summary(model)$coef[, 1], summary(model)$coef[, 2], summary(model.wt)$coef[, 1], summary(model.wt)$coef[, 2], pred.mse, pred.wt.mse)
+	names(bias) <- c('EST intercept OLS', 'EST slope OLS', 'SE intercept OLS', 'SE slope OLS', 'EST intercept WLS', 'EST slope WLS', 'SE intercept WLS', 'SE slope WLS', 'MSPE OLS', 'MSPE WLS')
+	return(bias)
 }
-
-
-##
-## Simulate dbh
-##
-
-N <- 1000 # finite population size
-n <- 100 # expected sample size
-
-##
-## Start with a population that is a mixture of Gamma Distributions
-##
-
-alpha <- c(2, 4, 6, 8) # gamma mixture parameter
-beta <- c(12, 10, 8, 6) # gamma mixture parameter
-
-dbh <- make.gamma.mixture(N, alpha, beta)
-
-##
-## Plot DBH
-##
-
-layout(matrix(1:4, 2, 2))
-for(i in 1:4){ # plot the four distibutions to mix
-	curve(dgamma(x, alpha[i], beta[i]), from = 0, to = 4)
-}
-
-par(mfrow = c(1, 1))
-#pdf(file = 'dbh1.pdf')
-hist(dbh, breaks = 20)
-#dev.off()
-
-## 
-## True mean and variance for DBH
-##
-
-dbh.mn <- mean(dbh)
-dbh.var <- var(dbh)
-
-##
-## Simulate Biomass
-##
-
-b0 <- 5
-b1 <- 2
-s2 <- 1/4
-
-bio <- make.sim.biomass(dbh, b0, b1, s2)
-bio.mn <- mean(bio)
-bio.var <- var(bio)
-
-##
-## Plot Data
-##
-
-#make.model.plot(dbh, bio, file = "fullModel.pdf")
-make.model.plot(dbh, bio)
-
-##
-## empirical estimator results
-##
 
 make.est.result <- function(rep, dbh, bio, n = N / 2, method = 'design'){
 	out <- make.samp(dbh, bio, n, method)
@@ -227,60 +186,7 @@ make.est.result <- function(rep, dbh, bio, n = N / 2, method = 'design'){
 		}
 		return(1 / (N * n) * (N*out$bio[1] + sum(z)))
 	}
+	if(method == 'strat'){
+		return(out$bio.mn)
+	}
 }
-
-
-make.est.strat.result <- function(rep, dbh, bio, n = N / 2){
-	out <- make.samp.strat(dbh, bio, n)
-  return(out$bio.mn)
-}
-
-library(parallel)
-library(snowfall)
-library(rlecuyer)
-cps <- detectCores()
-sfInit(parallel = TRUE, cpus = cps)
-sfClusterSetupRNG() 
-sfExportAll()
-
-temp.srs <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'srs') 
-summary(temp.srs)
-mean(temp.srs)
-var(temp.srs)
-
-temp.pps <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'pps') 
-summary(temp.pps)
-mean(temp.pps)
-var(temp.pps)
-
-temp.ecdf <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'ecdf') 
-summary(temp.ecdf)
-mean(temp.ecdf)
-var(temp.ecdf)
-
-temp.design <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'design') 
-summary(temp.design)
-mean(temp.design)
-var(temp.design)
-
-temp.strat <- sfSapply(1:1000, make.est.strat.result, dbh = dbh, bio = bio, n = n) 
-summary(temp.strat)
-mean(temp.strat)
-var(temp.strat)
-
-
-bio.mn
-mean(temp.srs)
-mean(temp.ecdf)
-mean(temp.pps)
-mean(temp.design)
-mean(temp.strat)
-
-var(temp.srs)
-var(temp.ecdf)
-var(temp.pps)
-var(temp.design)
-var(temp.strat)
-
-dbh.mn
-
