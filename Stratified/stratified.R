@@ -16,8 +16,8 @@ sfClusterSetupRNG()
 ## Simulate dbh
 ##
 
-N <- 1000 # finite population size
-n <- 100 # expected sample size
+N <-400 # finite population size
+n <- 200 # expected sample size
 
 ##
 ## Start with a population that is a mixture of Gamma Distributions
@@ -101,16 +101,20 @@ summary(temp.strat)
 mean(temp.strat)
 var(temp.strat)
 
+temp.design.pps <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'strat') 
+summary(temp.design.pps)
+mean(temp.design.pps)
+var(temp.design.pps)
 
-tab <- cbind(c(mean(temp.srs) - bio.mn, mean(temp.ecdf) - bio.mn, mean(temp.pps) - bio.mn, mean(temp.design) - bio.mn, mean(temp.strat) - bio.mn), c(var(temp.srs) / var(temp.srs), var(temp.ecdf) / var(temp.srs), var(temp.pps) / var(temp.srs), var(temp.design) / var(temp.srs), var(temp.strat) / var(temp.srs)))
-rownames(tab) = c('SRS', 'ECDF', 'PPS', "AECDF", "STSI")
+tab <- cbind(c(mean(temp.srs), mean(temp.ecdf), mean(temp.pps), mean(temp.design), mean(temp.design.pps), mean(temp.strat)) - bio.mn, c(var(temp.srs), var(temp.ecdf), var(temp.pps), var(temp.design), var(temp.design.pps), var(temp.strat)) / var(temp.srs))
+rownames(tab) = c('SRS', 'ECDF', 'PPS', "AECDF", "APPS", "STSI")
 colnames(tab) <- c('Bias', 'Relative Efficiency')
 xtable(tab)
 
 
 out <- make.samp(dbh, bio, n, method = 'strat')
 
-make.model.plot(out$dbh, out$bio)
+#make.model.plot(out$dbh, out$bio)
 
 dbh.mn
 

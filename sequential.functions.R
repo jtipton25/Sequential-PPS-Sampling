@@ -95,6 +95,21 @@ make.samp <- function(dbh, bio, n, method = 'srs'){
 		idx <- order(dbh)
 		#p <- make.pi(N)
 	}
+		if(method == 'design.pps'){
+			idx <- sample(1:N)
+			p <- vector(length = N)
+      dbh.sum <- 0
+			for(k in 1:N){
+				p <- dbh[idx[k]] / sum(dbh[idx[1:k]])
+# 				x <- dbh[idx[1:k]]
+# 				fn <- ecdf(x)
+# 				p[k] <- fn(x)[k]
+ 			}
+			p <- p * 2 * n / N # potential sample size adjustment
+			samp <- which(rbinom(N, 1, p) == 1)
+			idx <- order(dbh)
+			#p <- make.pi(N)
+	}
 	if(method == 'strat'){
 	  if(n %% 3 == 0){
 		  n1 <- n / 3
@@ -179,6 +194,14 @@ make.est.result <- function(rep, dbh, bio, n = N / 2, method = 'design'){
 		return(1 / N * sum(out$bio / out$p[out$samp]))
 	}
 	if(method == 'design'){
+		z <- vector(length = n.samp - 1)
+		q <- 1 / (N - 1:(n.samp - 1))
+		for(i in 2:n.samp){
+			z[i - 1] <- sum(out$bio[1:(i - 1)]) + out$bio[i] / q[i - 1]
+		}
+		return(1 / (N * n) * (N*out$bio[1] + sum(z)))
+	}
+	if(method == 'design.pps'){
 		z <- vector(length = n.samp - 1)
 		q <- 1 / (N - 1:(n.samp - 1))
 		for(i in 2:n.samp){
