@@ -16,8 +16,8 @@ sfClusterSetupRNG()
 ## Simulate dbh
 ##
 
-N <-400 # finite population size
-n <- 200 # expected sample size
+N <- 400 # finite population size
+n <- 100 # expected sample size
 
 ##
 ## Start with a population that is a mixture of Gamma Distributions
@@ -75,35 +75,35 @@ dev.off()
 ##
 
 
-
+iter <- 10000
 sfExportAll()
 
-temp.srs <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'srs') 
+temp.srs <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'srs') 
 summary(temp.srs)
 mean(temp.srs)
 var(temp.srs)
 
-temp.pps <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'pps') 
+temp.pps <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'pps') 
 summary(temp.pps)
 mean(temp.pps)
 var(temp.pps)
 
-temp.ecdf <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'ecdf') 
+temp.ecdf <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'ecdf') 
 summary(temp.ecdf)
 mean(temp.ecdf)
 var(temp.ecdf)
 
-temp.design <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'design') 
+temp.design <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'design') 
 summary(temp.design)
 mean(temp.design)
 var(temp.design)
 
-temp.strat <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'strat') 
+temp.strat <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'strat') 
 summary(temp.strat)
 mean(temp.strat)
 var(temp.strat)
 
-temp.design.pps <- sfSapply(1:1000, make.est.result, dbh = dbh, bio = bio, n = n, method = 'strat') 
+temp.design.pps <- sfSapply(1:iter, make.est.result, dbh = dbh, bio = bio, n = n, method = 'strat') 
 summary(temp.design.pps)
 mean(temp.design.pps)
 var(temp.design.pps)
