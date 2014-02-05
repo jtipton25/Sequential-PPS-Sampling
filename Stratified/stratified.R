@@ -66,7 +66,9 @@ bio.var <- var(bio)
 ##
 
 #make.model.plot(dbh, bio, file = "fullModel.pdf")
+pdf(file = 'dbhModel.pdf')
 make.model.plot(dbh, bio)
+dev.off()
 
 ##
 ## empirical estimator results

@@ -1,0 +1,7 @@
+\beamer@endinputifotherversion {3.26pt}
+\beamer@sectionintoc {1}{Introduction}{2}{0}{1}
+\beamer@sectionintoc {2}{Horvitz-Thompson Estimation}{7}{0}{2}
+\beamer@sectionintoc {3}{Sampling Design}{8}{0}{3}
+\beamer@sectionintoc {4}{Estimation of the model}{9}{0}{4}
+\beamer@sectionintoc {5}{Simulation and results}{10}{0}{5}
+\beamer@sectionintoc {6}{Appendix - Current discussion items, thoughts, hypotheses, and other trains of thought}{16}{0}{6}
