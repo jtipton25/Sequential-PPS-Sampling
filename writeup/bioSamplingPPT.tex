@@ -7,8 +7,8 @@
 \def\bm#1{\mbox{\boldmath $#1$}}
 \include{macros}
  
-\title{Sampling forest plots using adaptive empirical cumulative distribution functions}
-\author{John Tipton}
+\title{Designs for subsampling tree cores for biomass estimation}
+\author{John Tipton, Mevin Hooten }
 \date{\today}
 \begin{document}
 %
@@ -63,11 +63,12 @@ The allometric model is estimated by using ordinary least squares on the log-log
 %
 \begin{frame}
   \frametitle{Questions of Interest}
-  Three questions:
+%   Three questions:
+  Main questions:
   \begin{enumerate}
   \item What is the effect of sampling design on the estimate of total biomass and its variance estimator \vspace{3mm}
-  \item What is the effect of sampling desing on the estimation of the coefficients $\beta_0$ and $\beta_1$ and the estimation of the variances associated with the coefficients $\beta_0$ and $\beta_1$ \vspace{3mm}
-  \item How to optimize the sampling design for the desired sampling goals of stimating the total plot biomass with high precision while selecting large trees
+%   \item What is the effect of sampling design on the estimation of the coefficients $\beta_0$ and $\beta_1$ and the estimation of the variances associated with the coefficients $\beta_0$ and $\beta_1$ \vspace{3mm}
+  \item How to optimize the sampling design for the desired sampling goals of estimating the total plot biomass with high precision while selecting large trees
   \end{enumerate}
 \end{frame}
 %
@@ -138,18 +139,16 @@ The allometric model is estimated by using ordinary least squares on the log-log
 
 %
 \begin{frame}
-  \section{Estimation of the model}
   \begin{itemize}
-    \item The log model can be estimated by using weighted least squares regression with the weight matrix $W = diag(\hat{\pi}_1, \ldots, \hat{\pi}_N)$ \vspace{3mm}
+    \item The log model can be estimated by using weighted least squares regression with the weight matrix $W = diag(\pi_1, \ldots, \pi_N)$ \vspace{3mm}
     \item Weighted least squares regression model estimate for $\beta$ is $\hat{\beta} = (X^T W X)^{ - 1} X^T W y$ \vspace{3mm}
-    \item The estimates then be transformed into by appropriately transforming the variance estimates through a Delta method like transformation.
   \end{itemize}
 \end{frame}
 %
 \begin{frame}
   \section{Sampling Designs}
 %
-  Six different sampling schemes were considered %% Others to consider are Bitterlich sampling (similar to PPS, selection probability depends on tree size and distance from plot center) - definitely worth pursuing - See Gregorie and Valentine
+  Five different sampling schemes were considered %% Others to consider are Bitterlich sampling (similar to PPS, selection probability depends on tree size and distance from plot center) - definitely worth pursuing - See Gregorie and Valentine
   %% Stacked radius plots would be similar to STSI 
   %% Can work on including these, but it would require re-writing the simulation code to include locations
   \begin{enumerate}
@@ -157,7 +156,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
     \item Empirical cumulative distribution function (ECDF)
     \item Probability proportional to size sampling (PPS)
     \item Adaptive estimation of the ECDF (AECDF)
-    \item Adaptive estimation of the PPS design (APPS)
+%     \item Adaptive estimation of the PPS design (APPS)
     \item Stratified sampling with simple random sampling within each stratum (STSI)
   \end{enumerate}
 \end{frame}
@@ -167,18 +166,25 @@ The allometric model is estimated by using ordinary least squares on the log-log
   \begin{itemize}
     \item Easy to implement in the field  \vspace{3mm}
     \item Fails to preferentially select large dbh trees \vspace{3mm}
-    \item Baseline for comparison of precision 
+    \item Baseline for comparison of precision \vspace{3mm}
+    \item Example sampling protocol:\vspace{3mm}
+    \begin{itemize}
+      \item Count the number $N$ of trees at the plot and sample $n$ without replacement
+    \end{itemize}    
   \end{itemize}
 \end{frame}
 %
 \begin{frame}
   \frametitle{Probability Proportional to Size (PPS)}
   \begin{itemize}
-    \item PPS sampling assigns sample inclusion probabilities based on a size variable known a priori, in our case dbh \vspace{3mm}
+    \item PPS sampling assigns sample inclusion probabilities based on a size variable known for all elements in the sample, in our case dbh \vspace{3mm}
     \item PPS sampling assigns sample weights for element $i$ of $\pi_i = \frac{dbh_i} {\sum_{i \in U} dbh_i}$ \vspace{3mm}
-    \item Requires measuring all of the dbh values on the plot and labeling the trees before coring \vspace{3mm}
     \item Highly efficient. This scheme will increase precision more than any other method \vspace{3mm}
-    \item PPS sampling will also preferentially sample larger dbh trees relative to smaller dbh trees \vspace{3mm}
+    \item PPS sampling will preferentially sample larger dbh trees \vspace{3mm}
+    \item Example sampling procedure \vspace{3mm}
+    \begin{itemize}
+      \item Measure dbh and label all trees in the plot to allow re-visit. Decide which tree to core using a tablet or cellphone with probability of being sampled proportional to size.
+    \end{itemize}
   \end{itemize}
 \end{frame}
 %
@@ -186,20 +192,26 @@ The allometric model is estimated by using ordinary least squares on the log-log
   \frametitle{Empirical Cumulative Distribution Function Sampling ECDF}
   \begin{itemize} 
     \item ECDF sampling assigns sample inclusion probabilities based on the finite population empirical distribution function $F(\cdot)$ where $F(x_{(n)}) = \frac{n} {N}$ for $x_{(n)}$ the $n^{th}$ order statistic \vspace{3mm}
-    \item This requires knowing the values of the dbh a priori \vspace{3mm}
+%    \item This requires knowing the values of the dbh a priori \vspace{3mm}
     \item ECDF provides a point of comparison of the AECDF method as the ECDF is a best case scenario of the AECDF method \vspace{3mm}
-    \item ECDF will reduce the variance relative to SRS \vspace{3mm}
-    \item ECDF will preferentially sample larger trees
+    \item ECDF will preferentially sample larger trees \vspace{3mm}
+    \item Example sampling procedure: \vspace{3mm}
+    \begin{itemize}
+      \item  Measure dbh and label all trees in the plot to allow re-visit. Decide which tree to core using a tablet or cellphone with probability of being sampled proportional to the ECDF of dbh.
+    \end{itemize}
   \end{itemize}    
 \end{frame}
 %
 \begin{frame}
   \frametitle{Stratified Sampling (STSI)}
   \begin{itemize}
-    \item STSI sampling assigns sample inclusion probabilities for different size classes according to a simple random sampling scheme \vspace{3mm}
+%    \item STSI sampling assigns sample inclusion probabilities for different size classes according to a simple random sampling scheme \vspace{3mm}
     \item STSI groups similar elements of the population and thus increases the precision of estimates by reducing within group variances \vspace{3mm}
     \item STSI sampling can be made to preferentially sample larger trees \vspace{3mm}
-    \item STSI sampling can easily be implemented in field by initially estimating the number of trees in each size class on the plot and then using a random number generator in a tablet PC or smartphone to randomly select the sample within each size class \vspace{3mm}
+    \item Example sampling procedure: \vspace{3mm}
+    \begin{itemize}
+      \item Decide on a criteria for separating trees into class sizes $h = 1, \ldots H$ (e.g. small, medium, large). At the plot estimate the number of trees in each class size $N_h$ (this does not have to be exact, just close). Using a cellphone/tablet, randomly sample $n_h$ trees from each class $h$. 
+    \end{itemize}
   \end{itemize}
 \end{frame} 
 %
@@ -207,25 +219,27 @@ The allometric model is estimated by using ordinary least squares on the log-log
   \frametitle{Adaptive ECDF sampling (AECDF)}
   \begin{itemize}
     \item AECDF asymptotically approaches the ECDF design \vspace{3mm}
-    \item AECDF sampling can be implemented in the field using a tablet or smartphone \vspace{3mm}
-    \item At each dbh measurement, an up/down sampling decision to core can be made without knowing all the values of dbh \vspace{3mm}
     \item AECDF preferentially samples larger dbh trees \vspace{3mm}
-    \item For finite populations, the question of interest is the effect of the AECDF design on the estimation of plot level biomass \vspace{3mm}
-    \item AECDF variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge)
+    \item AECDF variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge) \vspace{3mm}
+    \item Example sampling procedure: \vspace{3mm}
+    \begin{itemize}
+      \item Measure the dbh of the first tree at the plot. Sample a tree core for this first tree. At the second tree, measure dbh and sample according to up-down decision using smartphone or computer. Continue through the plot in this fashion. This design produces a random (but controllable) sample size.
+    \end{itemize}
   \end{itemize}
 \end{frame}
 %
-\begin{frame}
-  \frametitle{Adaptive PPS sampling (APPS)}
-  \begin{itemize}
-    \item APPS asymptotically approaches the PPS design \vspace{3mm}
-    \item APPS sampling can be implemented in the field using  a tablet computer or cell phone \vspace{3mm}
-    \item At each dbh measurement, an up/down sampling decision to core can be made without knowing all the values of dbh \vspace{3mm}
-    \item APPS preferentially samples larger dbh trees \vspace{3mm}
-    \item For finite populations, the question of interest is the effect of the APPS design on the estimation of plot level biomass \vspace{3mm}
-    \item APPS variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge)
-  \end{itemize}
-\end{frame}
+% \begin{frame}
+%   \frametitle{Adaptive PPS sampling (APPS)}
+%   \begin{itemize}
+%     \item APPS asymptotically approaches the PPS design \vspace{3mm}
+%     \item APPS preferentially samples larger dbh trees \vspace{3mm}
+%     \item APPS variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge) \vspace{3mm}
+%     \item Example sampling procedure:
+%     \begin{itemize}
+%       \item Measure the dbh of the first tree at the plot. Sample a tree core for this first tree. At the second tree, measure dbh and sample according to up-down decision using smartphone or computer. Continue through the plot in this fashion. This design produces a random (but controllable) sample size.
+%     \end{itemize}
+%   \end{itemize}
+% \end{frame}
 %
 \begin{frame}
   \section{Simulation and results}
@@ -246,7 +260,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
     ECDF & -0.01 & 0.71 \\ 
     PPS & -0.04 & 0.13 \\ 
     AECDF & 0.06 & 1.40 \\ 
-    APPS & -0.02 & 0.47 \\ 
+%     APPS & -0.02 & 0.47 \\ 
     STSI & 0.00 & 0.48 \\ 
    \hline
   \end{tabular}
@@ -267,7 +281,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
     ECDF & -0.00 & 0.73 \\ 
     PPS & -0.07 & 0.14 \\ 
     AECDF & 0.01 & 1.41 \\ 
-    APPS & 0.00 & 0.36 \\ 
+%     APPS & 0.00 & 0.36 \\ 
     STSI & -0.00 & 0.37 \\ 
      \hline
   \end{tabular}
@@ -288,7 +302,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
     ECDF & 0.00 & 0.54 \\ 
     PPS & -0.27 & 0.10 \\ 
     AECDF & 0.04 & 1.45 \\ 
-    APPS & -0.00 & 0.56 \\ 
+%     APPS & -0.00 & 0.56 \\ 
     STSI & 0.00 & 0.55 \\ 
    \hline
   \end{tabular}
@@ -296,24 +310,35 @@ The allometric model is estimated by using ordinary least squares on the log-log
 \end{frame}
 %
 \begin{frame}
-  \section{Sampling Design}
+  \frametitle{Results for sampling for biomass}
+  \section{Results}
   \begin{enumerate}
-    \item Count (roughly estimate) the number of trees on the plot of interest in each stratum category of interest (e.g. small, medium large). \vspace{3mm}
-    \item Based on the goals of the study, divide the sampling effort $n$ into the categories of interest, making sure to keep a minimum of 5? elements per stratum category.
+    \item Relative efficiency is a measure of the expected decrease in variance for a given sample size and design relative to SRS. A relative efficiency of 0.25 implies the design of interest has 1/4 of the variance of SRS design (equivalently the design requires $\sqrt{1/4} = 1/2$ the sample size to achieve the same efficiency).
+    \item Two designs perform well in the simulation, PPS, and STSI. Of these designs, STSI is the easiest to implement in field while PPS is more powerful. STSI can be tuned to sample the distribution of dbh (and hence biomass and age)
+    \item Fixed radius nested plot sampling is similar to STSI sampling and Bitterlich sampling is similar to PPS sampling.
+%     \item Note that this simulation also includes uncertainty in estimating the allometric model coefficients $\hat{\beta}$ and using known values would increase efficiency further
   \end{enumerate}
 \end{frame}
 %
 \begin{frame}
-  \section{Appendix - Current discussion items, thoughts, hypotheses, and other trains of thought}
+  \frametitle{Sampling for age (longer chronologies)}
   \begin{itemize}
-    \item First, we need to pin down the primary questions of interest and define the goals
-    \begin{itemize}
-      \item Is the goal to sample large trees that will likely have a longer chronology and thus allow a better back forecast of biomass in a probabilistic way?
-      \item Is the goal to decrease the uncertainty about biomass for large values of dbh?
-      \item Is the goal to develop an adaptive sampling design that can be implemented in field to preferentially select larger trees in a statistically sound way while maintaining a probabilistic sample or is it to design a robust sampling design that is easy to implement?
-    \end{itemize}
-    \item Does the design need to incorporate multiple species? perhaps you could stratify based on size and species?
+    \item The results for sampling older trees should be comparable to these designs sampling biomass, as long as the correlation between age and dbh is similar to the correlation between biomass and dbh. As this level of correlation decreases, the efficiency gains due to STSI and PPS sampling decrease as well
+    \item Currently we are investigating a sub-sampling scheme using real data to show similar results for tree age as we have for biomass.
   \end{itemize}
 \end{frame}
+%
+% \begin{frame}
+%   \section{Appendix - Current discussion items, thoughts, hypotheses, and other trains of thought}
+%   \begin{itemize}
+%     \item First, we need to pin down the primary questions of interest and define the goals
+%     \begin{itemize}
+%       \item Is the goal to sample large trees that will likely have a longer chronology and thus allow a better back forecast of biomass in a probabilistic way?
+%       \item Is the goal to decrease the uncertainty about biomass for large values of dbh?
+%       \item Is the goal to develop an adaptive sampling design that can be implemented in field to preferentially select larger trees in a statistically sound way while maintaining a probabilistic sample or is it to design a robust sampling design that is easy to implement?
+%     \end{itemize}
+%     \item Does the design need to incorporate multiple species? perhaps you could stratify based on size and species?
+%   \end{itemize}
+% \end{frame}
 %
 \end{document}

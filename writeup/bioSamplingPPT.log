@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  5 FEB 2014 16:05
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  24 FEB 2014 14:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -893,18 +893,11 @@ LaTeX Info: Redefining \includegraphics on input line 13.
 LaTeX Font Warning: Font shape `OT1/cmss/m/n' in size <4> not available
 (Font)              size <5> substituted on input line 17.
 
-
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
 [1{/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
 
 ]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
 [2
 
 ]
@@ -916,130 +909,54 @@ LaTeX Font Info:    Try loading font information for U+msb on input line 38.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+) [3
 
-
-[3
-
-] <dbhModel.pdf, id=158, 505.89pt x 505.89pt>
+]
+<dbhModel.pdf, id=143, 505.89pt x 505.89pt>
 File: dbhModel.pdf Graphic file (type pdf)
  <use dbhModel.pdf>
 Package pdftex.def Info: dbhModel.pdf used on input line 48.
 (pdftex.def)             Requested size: 126.47218pt x 126.47218pt.
+ [4
 
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[4
-
- <./dbhModel.pdf>] <dbhLogModel.pdf, id=202, 505.89pt x 505.89pt>
+ <./dbhModel.pdf>] <dbhLogModel.pdf, id=185, 505.89pt x 505.89pt>
 File: dbhLogModel.pdf Graphic file (type pdf)
-
-<use dbhLogModel.pdf>
+ <use dbhLogModel.pdf>
 Package pdftex.def Info: dbhLogModel.pdf used on input line 62.
 (pdftex.def)             Requested size: 75.88022pt x 75.88022pt.
 
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
 [5
 
- <./dbhLogModel.pdf>]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+ <./dbhLogModel.pdf>] [6
 
+] [7
 
-[6
+] [8
 
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+] [9
 
+] [10
 
-[7
+] [11
 
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+] [12
 
+] [13
 
-[8
+] [14
 
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+] [15
 
-
-[9
+] [16
 
 ]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[10
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[11
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[12
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[13
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[14
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[15
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[16
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
 [17
 
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
+] [18
 
+] [19
 
-[18
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[19
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[20
-
-]
-Overfull \vbox (35.5204pt too high) has occurred while \output is active []
-
-
-[21
+] [20
 
 ]
 \tf@nav=\write6
@@ -1051,26 +968,26 @@ Overfull \vbox (35.5204pt too high) has occurred while \output is active []
 \tf@snm=\write8
 \openout8 = `bioSamplingPPT.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 317.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 317.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 344.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 344.
  (./bioSamplingPPT.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 317.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 317.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 344.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 344.
 Package rerunfilecheck Info: File `bioSamplingPPT.out' has not changed.
-(rerunfilecheck)             Checksum: F6FD0DC88223AE318C5D4F138DED023B;446.
+(rerunfilecheck)             Checksum: 5B45AF8D1034FC7FEECEDB7763A312DA;259.
 
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 317.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 344.
  ) 
 Here is how much of TeX's memory you used:
- 15858 strings out of 493315
- 299343 string characters out of 6137904
- 372054 words of memory out of 5000000
- 18873 multiletter control sequences out of 15000+600000
- 14536 words of font info for 54 fonts, out of 8000000 for 9000
+ 15850 strings out of 493315
+ 299277 string characters out of 6137904
+ 372045 words of memory out of 5000000
+ 18867 multiletter control sequences out of 15000+600000
+ 15532 words of font info for 58 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  49i,16n,60p,735b,551s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
@@ -1086,10 +1003,10 @@ sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></us
 r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr
 /local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/l
 ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on bioSamplingPPT.pdf (21 pages, 244599 bytes).
+Output written on bioSamplingPPT.pdf (20 pages, 239600 bytes).
 PDF statistics:
- 834 PDF objects out of 1000 (max. 8388607)
- 780 compressed objects within 8 object streams
- 52 named destinations out of 1000 (max. 500000)
- 109 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 751 PDF objects out of 1000 (max. 8388607)
+ 699 compressed objects within 7 object streams
+ 48 named destinations out of 1000 (max. 500000)
+ 93 words of extra memory for PDF output out of 10000 (max. 10000000)
 

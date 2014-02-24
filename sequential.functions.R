@@ -30,7 +30,7 @@ make.model.plot <- function(dbh, bio, file = 'pathname'){ # plot model fits and 
 	layout(matrix(1:4, nrow = 2))
 	hist(dbh, breaks = floor(N / 10))
 	hist(bio, breaks = floor(N / 10))
-	# model
+	# model 
 	model <- lm(log(bio) ~ log(dbh))
 	newdbh <- seq(min(dbh), max(dbh), length.out = N)
 	preds <- predict(model, newdata = data.frame(dbh = newdbh), interval = "predict")
@@ -100,35 +100,53 @@ make.samp <- function(dbh, bio, n, method = 'srs'){
 			p <- vector(length = N)
       dbh.sum <- 0
 			for(k in 1:N){
-				p <- dbh[idx[k]] / sum(dbh[idx[1:k]])
+				p[k] <- dbh[idx[k]] / sum(dbh[idx[1:k]])
 # 				x <- dbh[idx[1:k]]
 # 				fn <- ecdf(x)
 # 				p[k] <- fn(x)[k]
  			}
-			p <- p * 2 * n / N # potential sample size adjustment
-			samp <- which(rbinom(N, 1, p) == 1)
+			p <- min(p * 2 * n , 1) # potential sample size adjustment
+#       p <- p * 2 * n / N # potential sample size adjustment
+      samp <- which(rbinom(N, 1, p) == 1)
 			idx <- order(dbh)
 			#p <- make.pi(N)
 	}
-	if(method == 'strat'){
-	  if(n %% 3 == 0){
-		  n1 <- n / 3
-  		n2 <- n / 3
-	   	n3 <- n / 3
-  	}
-	  if(n %% 3 == 1){
-		  n1 <- floor(n / 3)
-  		n2 <- floor(n / 3)
-	   	n3 <- ceiling(n / 3)
-  	}
-	  if(n %% 3 == 2){
-		  n1 <- floor(n / 3)
-		  n2 <- ceiling(n / 3)
-		  n3 <- ceiling(n / 3)
-  	}	
+# 	if(method == 'strat'){
+# 	  if(n %% 3 == 0){
+# 		  n1 <- n / 3
+#   		n2 <- n / 3
+# 	   	n3 <- n / 3
+#   	}
+# 	  if(n %% 3 == 1){
+# 		  n1 <- floor(n / 3)
+#   		n2 <- floor(n / 3)
+# 	   	n3 <- ceiling(n / 3)
+#   	}
+# 	  if(n %% 3 == 2){
+# 		  n1 <- floor(n / 3)
+# 		  n2 <- ceiling(n / 3)
+# 		  n3 <- ceiling(n / 3)
+#   	}	
+if(method == 'strat'){
+	if(n %% 3 == 0){
+		n1 <- n / 6
+		n2 <- n / 3
+		n3 <- n / 2
+	}
+	if(n %% 3 == 1){
+		n1 <- floor(n / 6)
+		n2 <- floor(n / 3)
+		n3 <- ceiling(n / 2)
+	}
+	if(n %% 3 == 2){
+		n1 <- floor(n / 6)
+		n2 <- ceiling(n / 3)
+		n3 <- ceiling(n / 2)
+	}	
 	  N <- length(dbh)
   	dbh.quant <- make.gamma.mixture(N, alpha = c(2, 4, 6, 8), beta = c(12, 10, 8, 6))
-	  quant <- quantile(dbh.quant, probs = c(1/3, 2/3))
+# 	  quant <- quantile(dbh.quant, probs = c(1/3, 2/3))
+quant <- quantile(dbh.quant, probs = c(1/6, 1/3))
   	q.idx.1 <- which(dbh < quant[1])
   	q.idx.2 <- which(quant[1] <= dbh & dbh < quant[2])
   	q.idx.3 <- which(quant[2] <= dbh)

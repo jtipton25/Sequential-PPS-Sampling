@@ -39,7 +39,7 @@
 %
 \begin{frame}
   \frametitle{The Model}
-  A plot of the allometric relationship using simulated data is seen below
+  A plot of the allometric relationship using simulated data
   \begin{figure}
     \centering
 %     \caption{Plot of simulated allometric relationship typical of a sample plot (assumes one species only)}
@@ -62,6 +62,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
 \end{frame}
 %
 \begin{frame}
+  \frametitle{Questions of Interest}
   Three questions:
   \begin{enumerate}
   \item What is the effect of sampling design on the estimate of total biomass and its variance estimator \vspace{3mm}
@@ -75,10 +76,13 @@ The allometric model is estimated by using ordinary least squares on the log-log
   \section{Horvitz-Thompson Estimation}
   For a finite population with elements indexed by $i = 1, \ldots, N$ with a probability $\pi_i$ of being included in the sample $s$, the unbiased estimate of the population total is 
   \begin{align*}
-    \hat{t}_y = \sum_{i \in s} \frac{y_i} {\pi_i}
+    \hat{t}_\pi &  = \sum_{k \in s} \frac{y_k} {\pi_k}.
+  \end{align*}
+  Estimation of the variance of the population total is calculated as
+  \begin{align*}
+    \hat{V}(\hat{t}_\pi) &  = \sum_{k \in s} \sum_{l \in s} \frac{1} {\pi_{kl}} \left( \frac{\pi_{kl}} {\pi_k \pi_l} - 1 \right) y_k y_l
   \end{align*}
 \end{frame}
-
 %%
 %% Add in variance estimator and regression estimator
 %%
@@ -131,73 +135,172 @@ The allometric model is estimated by using ordinary least squares on the log-log
 % is the stratum variance in stratum $h$. The mean plot biomass can then be calcualted as $\frac{\hat{t}_\pi} {N}$ and the variance estimator for the mean plot biomass is $\frac{1} {N^2} \hat{V}(\hat{t}_\pi)$.
 % 
 %
+
+%
+\begin{frame}
+  \section{Estimation of the model}
+  \begin{itemize}
+    \item The log model can be estimated by using weighted least squares regression with the weight matrix $W = diag(\hat{\pi}_1, \ldots, \hat{\pi}_N)$ \vspace{3mm}
+    \item Weighted least squares regression model estimate for $\beta$ is $\hat{\beta} = (X^T W X)^{ - 1} X^T W y$ \vspace{3mm}
+    \item The estimates then be transformed into by appropriately transforming the variance estimates through a Delta method like transformation.
+  \end{itemize}
+\end{frame}
+%
+\begin{frame}
+  \section{Sampling Designs}
+%
+  Six different sampling schemes were considered %% Others to consider are Bitterlich sampling (similar to PPS, selection probability depends on tree size and distance from plot center) - definitely worth pursuing - See Gregorie and Valentine
+  %% Stacked radius plots would be similar to STSI 
+  %% Can work on including these, but it would require re-writing the simulation code to include locations
+  \begin{enumerate}
+    \item Simple random sampling (SRS)
+    \item Empirical cumulative distribution function (ECDF)
+    \item Probability proportional to size sampling (PPS)
+    \item Adaptive estimation of the ECDF (AECDF)
+    \item Adaptive estimation of the PPS design (APPS)
+    \item Stratified sampling with simple random sampling within each stratum (STSI)
+  \end{enumerate}
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Simple random sampling (SRS)}
+  \begin{itemize}
+    \item Easy to implement in the field  \vspace{3mm}
+    \item Fails to preferentially select large dbh trees \vspace{3mm}
+    \item Baseline for comparison of precision 
+  \end{itemize}
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Probability Proportional to Size (PPS)}
+  \begin{itemize}
+    \item PPS sampling assigns sample inclusion probabilities based on a size variable known a priori, in our case dbh \vspace{3mm}
+    \item PPS sampling assigns sample weights for element $i$ of $\pi_i = \frac{dbh_i} {\sum_{i \in U} dbh_i}$ \vspace{3mm}
+    \item Requires measuring all of the dbh values on the plot and labeling the trees before coring \vspace{3mm}
+    \item Highly efficient. This scheme will increase precision more than any other method \vspace{3mm}
+    \item PPS sampling will also preferentially sample larger dbh trees relative to smaller dbh trees \vspace{3mm}
+  \end{itemize}
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Empirical Cumulative Distribution Function Sampling ECDF}
+  \begin{itemize} 
+    \item ECDF sampling assigns sample inclusion probabilities based on the finite population empirical distribution function $F(\cdot)$ where $F(x_{(n)}) = \frac{n} {N}$ for $x_{(n)}$ the $n^{th}$ order statistic \vspace{3mm}
+    \item This requires knowing the values of the dbh a priori \vspace{3mm}
+    \item ECDF provides a point of comparison of the AECDF method as the ECDF is a best case scenario of the AECDF method \vspace{3mm}
+    \item ECDF will reduce the variance relative to SRS \vspace{3mm}
+    \item ECDF will preferentially sample larger trees
+  \end{itemize}    
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Stratified Sampling (STSI)}
+  \begin{itemize}
+    \item STSI sampling assigns sample inclusion probabilities for different size classes according to a simple random sampling scheme \vspace{3mm}
+    \item STSI groups similar elements of the population and thus increases the precision of estimates by reducing within group variances \vspace{3mm}
+    \item STSI sampling can be made to preferentially sample larger trees \vspace{3mm}
+    \item STSI sampling can easily be implemented in field by initially estimating the number of trees in each size class on the plot and then using a random number generator in a tablet PC or smartphone to randomly select the sample within each size class \vspace{3mm}
+  \end{itemize}
+\end{frame} 
+%
+\begin{frame}
+  \frametitle{Adaptive ECDF sampling (AECDF)}
+  \begin{itemize}
+    \item AECDF asymptotically approaches the ECDF design \vspace{3mm}
+    \item AECDF sampling can be implemented in the field using a tablet or smartphone \vspace{3mm}
+    \item At each dbh measurement, an up/down sampling decision to core can be made without knowing all the values of dbh \vspace{3mm}
+    \item AECDF preferentially samples larger dbh trees \vspace{3mm}
+    \item For finite populations, the question of interest is the effect of the AECDF design on the estimation of plot level biomass \vspace{3mm}
+    \item AECDF variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge)
+  \end{itemize}
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Adaptive PPS sampling (APPS)}
+  \begin{itemize}
+    \item APPS asymptotically approaches the PPS design \vspace{3mm}
+    \item APPS sampling can be implemented in the field using  a tablet computer or cell phone \vspace{3mm}
+    \item At each dbh measurement, an up/down sampling decision to core can be made without knowing all the values of dbh \vspace{3mm}
+    \item APPS preferentially samples larger dbh trees \vspace{3mm}
+    \item For finite populations, the question of interest is the effect of the APPS design on the estimation of plot level biomass \vspace{3mm}
+    \item APPS variance estimator will need to be derived mathematically (not currently solved to the best of my knowledge)
+  \end{itemize}
+\end{frame}
+%
+\begin{frame}
+  \section{Simulation and results}
+  Using the simulated data presented earlier, I repeatedly sampled $n = 10, 40,$ and $100$ trees from the simulated population of $N = 400$ trees using the proposed designs and calculated Monte Carlo bias and relative efficiencies for each design based on 10,000 replicates. 
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Results $n = 20$}
+  % latex table generated in R 3.0.2 by xtable 1.7-1 package
+  % Wed Feb  5 15:13:08 2014
+  \begin{table}[ht]
+  \centering
+  \begin{tabular}{rrr}
+    \hline
+    & Bias & Relative Efficiency \\ 
+    \hline
+    SRS & -0.00 & 1.00 \\ 
+    ECDF & -0.01 & 0.71 \\ 
+    PPS & -0.04 & 0.13 \\ 
+    AECDF & 0.06 & 1.40 \\ 
+    APPS & -0.02 & 0.47 \\ 
+    STSI & 0.00 & 0.48 \\ 
+   \hline
+  \end{tabular}
+  \end{table}
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Results $n = 40$}
+  % latex table generated in R 3.0.2 by xtable 1.7-1 package
+  % Wed Feb  5 15:01:30 2014
+  \begin{table}[ht]
+  \centering
+  \begin{tabular}{rrr}
+    \hline
+    & Bias & Relative Efficiency \\ 
+    \hline
+    SRS & -0.02 & 1.00 \\ 
+    ECDF & -0.00 & 0.73 \\ 
+    PPS & -0.07 & 0.14 \\ 
+    AECDF & 0.01 & 1.41 \\ 
+    APPS & 0.00 & 0.36 \\ 
+    STSI & -0.00 & 0.37 \\ 
+     \hline
+  \end{tabular}
+  \end{table} 
+\end{frame}
+%
+\begin{frame}
+  \frametitle{Results $n = 100$}
+  % latex table generated in R 3.0.2 by xtable 1.7-1 package
+  % Wed Feb  5 15:18:44 2014
+  \begin{table}[ht]
+  \centering
+  \begin{tabular}{rrr}
+    \hline
+    & Bias & Relative Efficiency \\ 
+   \hline
+    SRS & 0.01 & 1.00 \\ 
+    ECDF & 0.00 & 0.54 \\ 
+    PPS & -0.27 & 0.10 \\ 
+    AECDF & 0.04 & 1.45 \\ 
+    APPS & -0.00 & 0.56 \\ 
+    STSI & 0.00 & 0.55 \\ 
+   \hline
+  \end{tabular}
+  \end{table}
+\end{frame}
+%
 \begin{frame}
   \section{Sampling Design}
   \begin{enumerate}
     \item Count (roughly estimate) the number of trees on the plot of interest in each stratum category of interest (e.g. small, medium large). \vspace{3mm}
     \item Based on the goals of the study, divide the sampling effort $n$ into the categories of interest, making sure to keep a minimum of 5? elements per stratum category.
   \end{enumerate}
-\end{frame}
-%
-\begin{frame}
-  \section{Estimation of the model}
-  \begin{itemize}
-    \item The log model can be estimated by using weighted least squares regression with the weight matrix $W = diag(\hat{\pi}_1, \ldots, \hat{\pi}_N)$ \vspace{3mm}
-    \item The estimates then be transformed into by appropriately transforming the variance estimates through a Delta method like transformation.
-  \end{itemize}
-\end{frame}
-%
-\begin{frame}
-  \section{Simulation and results}
-%
-  Six different sampling schemes were considered
-  \begin{enumerate}
-    \item Simple random sampling (SRS)
-    \item Probability proportional to size sampling (PPS)
-    \item Empirical cumulative distribution function (ECDF)
-    \item Adaptive estimation of the PPS design (APPS)
-    \item Adaptive estimation of the ECDF (AECDF)
-    \item Stratified sampling with simple random sampling within each stratum (STSI)
-  \end{enumerate}
-\end{frame}
-%
-\begin{frame}
-  Comapring the designs
-  SRS sampling is the best known and one of the easiest sampling schemes to implement in the field as it only requires knowing (or estimating) the number of trees on the plot, but it fails to preferentially select large dbh trees and it is the basis for comparison for a reduction of variance so will not be efficient.
-\end{frame}
-%
-\begin{frame}
-  PPS sampling assigns sample inclusion probabilities based on a size variable known a priori, in our case we would use dbh if it was known. PPS sampling assigns sample weights for element $i$ of $\pi_i = \frac{x_i} {\sum_{i \in U} x_i}$. This presents problems for implementation in the field as it requires measuring all of the dbh values on the plot and labeling the trees. This labeling could be done in practice, but might be prohibitive in cost of time but will be highly efficient, in fact this scheme will reduce variance estimates more than any other method under the proposed model \eqref{1}. PPS sampling will also preferentially sample larger dbh trees relative to smaller dbh trees. PPS sampling meets criteria one and two but not three.\\
-  ECDF sampling assigns sample inclusion probabilities based on the finite population empirical distribution function $F(\cdot)$ where $F(x_{(n)}) = \frac{n} {N}$ for $x_{(n)}$ the $n^{th}$ order statistic. Like PPS sampling, this requires knowing the values of the dbh a priori, which is not possible in this particular example. The ECDF sampling design does provide a point of comparison of the AECDF method as the ECDF is a best case scenario of the AECDF method (i.e. if the ECDF method is not sufficient for this problem, then the AECDF design is necessarily not sufficient). The ECDF method will reduce the variance relative to SRS and will preferentially sample larger trees, thus meeting criteria one and two but not three.
-\end{frame}
-%
-\begin{frame}
-  STSI sampling assigns sample inclusion probabilities for different size classes according to a simple random sampling scheme. Stratified sampling has the advantage of grouping similar elements of the population and thus reducing the variance of estimates by reducing within group variances. STSI sampling can also be made to preferentially sample larger trees by preferentially sampling the largest dbh class. STSI sampling can easily be implemented in field by initially estimating the number of trees in each size class on the plot and then using a random number generator in a tablet PC or smartphone to randomly select the sample within each size class. The STSI meets all three of the design criteria of interest and its performance relative to other designs is of interest.\\
-  AECDF sampling assigns sample inclusion probabilities adaptively so that in the superpopultion model asymptotics the design is equivalent to ECDF sampling. AECDF sampling has the advantage in that it can be easily implemented in the field using modern technology like a tablet computer and excel spreadsheet. At each tree dbh measurement, a up/down sampling decision can be made and in the superpopulation model these sampling decisions approximate ECDF sampling without knowing a priori the values of dbh. AECDF also preferentially samples larger dbh trees. For finite populations, the question of interest is the effect of the AECDF design on the estimation of plot level biomass. The AECDF design meets criteria one and three, and the effect of this design on criteria two is of interest.
-\end{frame}
-%
-\begin{frame}
-  Using simulated data for dbh and biomass as shown in Figures 1-3 as a finite population approximating the true population criteria two can be evaluated for the different designs. From Table 1, it is seen that the most efficient design is PPS sampling with a relative efficiency of 0.12 for this particular simulation. The ECDF and STSI designs perform relatively similarily with respect to the relative efficiency measure with the STSI design being easier to implement without prior knowledge of the distribution of dbh. The AECDF method has relative efficiency higher than SRS and would only be useful if design criterions one and three are of interest.\\
-\end{frame}
-%
-\begin{frame}
-  % latex table generated in R 3.0.2 by xtable 1.7-1 package
-  % Tue Jan 28 14:38:53 2014
-  \begin{table}
-    \centering
-    \caption{Bias and Variance for design based estimates of mean plot biomass}
-    \begin{tabular}{rrr}
-    \hline
-    & Bias & Relative Efficiency \\ 
-    \hline
-    SRS & -0.00 & 1.00 \\ 
-    ECDF & -0.02 & 0.67 \\ 
-    PPS & -0.10 & 0.12 \\ 
-    AECDF & 0.00 & 1.35 \\ 
-    STSI & -0.00 & 0.59 \\ 
-     \hline
-  \end{tabular}
-  \end{table}
 \end{frame}
 %
 \begin{frame}
