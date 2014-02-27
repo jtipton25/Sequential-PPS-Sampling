@@ -32,9 +32,9 @@
   DBH is used as a predictor for biomass using an allometric equation.   Under simple random sampling, the model of interest is the allometric tree growth equation with exponential error given by 
   \begin{align}
   \label{1}
-     Y_i & =  X_i^{\beta_1} e^{\beta_0 + \epsilon}
+     y_i & =  x_i^{\beta_1} e^{\beta_0 + \epsilon}
   \end{align}
-  where $Y_i$ is biomass for tree $i$, $X_i$ is dbh for tree $i$, $\epsilon \sim N(0, \sigma^2)$ is a random error, and $\beta_0$ and $\beta_1$ are coefficients to be estimated.
+  where $y_i$ is biomass for tree $i$, $x_i$ is dbh for tree $i$, $\epsilon \sim N(0, \sigma^2)$ is a random error, and $\beta_0$ and $\beta_1$ are coefficients to be estimated.
 \end{frame}
 %
 \begin{frame}
@@ -52,7 +52,7 @@
 The allometric model is estimated by using ordinary least squares on the log-log model\\
   \begin{align}
   \label{2}
-    \log(Y_i) & = \beta_0 + \beta_1 \log(X_i) + \epsilon
+    \log(y_i) & = \beta_0 + \beta_1 \log(x_i) + \epsilon
   \end{align}
   \begin{figure}
     \centering
@@ -79,6 +79,7 @@ The allometric model is estimated by using ordinary least squares on the log-log
   \begin{align*}
     \hat{t}_\pi &  = \sum_{k \in s} \frac{y_k} {\pi_k}.
   \end{align*}
+  where $y_i$ is the biomass(or other variable of interest) for tree $i$.\vspace{3mm}
   Estimation of the variance of the population total is calculated as
   \begin{align*}
     \hat{V}(\hat{t}_\pi) &  = \sum_{k \in s} \sum_{l \in s} \frac{1} {\pi_{kl}} \left( \frac{\pi_{kl}} {\pi_k \pi_l} - 1 \right) y_k y_l

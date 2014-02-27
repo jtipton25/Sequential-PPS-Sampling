@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  24 FEB 2014 14:30
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  25 FEB 2014 10:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -968,11 +968,11 @@ Package pdftex.def Info: dbhLogModel.pdf used on input line 62.
 \tf@snm=\write8
 \openout8 = `bioSamplingPPT.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 344.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 344.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 345.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 345.
  (./bioSamplingPPT.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 344.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 344.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 345.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 345.
 Package rerunfilecheck Info: File `bioSamplingPPT.out' has not changed.
 (rerunfilecheck)             Checksum: 5B45AF8D1034FC7FEECEDB7763A312DA;259.
 
@@ -980,7 +980,7 @@ Package rerunfilecheck Info: File `bioSamplingPPT.out' has not changed.
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 344.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 345.
  ) 
 Here is how much of TeX's memory you used:
  15850 strings out of 493315
@@ -1003,7 +1003,7 @@ sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi8.pfb></us
 r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr
 /local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/l
 ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on bioSamplingPPT.pdf (20 pages, 239600 bytes).
+Output written on bioSamplingPPT.pdf (20 pages, 239571 bytes).
 PDF statistics:
  751 PDF objects out of 1000 (max. 8388607)
  699 compressed objects within 7 object streams
